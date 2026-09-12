@@ -1,31 +1,28 @@
 import { useState } from 'react';
 import { supabase } from './lib/supabaseClient';
+import { useAuth } from './contexts/AuthContext';
 
-function App() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (event) => {
-    event.preventDefault(); // stop the browser's default full-page-reload form submit
+    event.preventDefault();
     setErrorMessage('');
     setIsLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     setIsLoading(false);
 
     if (error) {
       setErrorMessage(error.message);
-      return;
     }
-
-    console.log('Logged in:', data.user);
-    alert(`Logged in as ${data.user.email}`);
+    // No need to manually handle success here -- onAuthStateChange
+    // in AuthContext picks up the new session automatically, and
+    // the whole app re-renders to show the logged-in view.
   };
 
   return (
@@ -59,6 +56,28 @@ function App() {
       </form>
     </div>
   );
+}
+
+function Dashboard() {
+  const { user, signOut } = useAuth();
+
+  return (
+    <div style={{ maxWidth: 480, margin: '4rem auto', fontFamily: 'sans-serif' }}>
+      <h1>Business Management System</h1>
+      <p>Logged in as {user.email}</p>
+      <button onClick={signOut}>Log out</button>
+    </div>
+  );
+}
+
+function App() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <p style={{ textAlign: 'center', marginTop: '4rem' }}>Loading...</p>;
+  }
+
+  return user ? <Dashboard /> : <LoginForm />;
 }
 
 export default App;
