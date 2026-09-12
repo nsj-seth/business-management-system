@@ -13,5 +13,8 @@ router.get('/days/:dayId/sales', bakeryController.listSales);
 router.post('/days/:dayId/expenses', bakeryController.addExpense);
 router.get('/days/:dayId/expenses', bakeryController.listExpenses);
 router.post('/days/:dayId/complete', bakeryController.completeDay);
+router.get('/days', bakeryController.listDays);
+router.get('/days/:dayId', bakeryController.getDay);
+
 
 module.exports = router;

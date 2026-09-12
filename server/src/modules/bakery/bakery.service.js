@@ -198,4 +198,25 @@ async function completeDay(dayId) {
   return data;
 }
 
-module.exports = { createDay, addSale, listSales, addExpense, listExpenses, completeDay };
+// Returns a day along with its full sales and expenses breakdown.
+async function getDayDetails(dayId) {
+  const day = await repository.findDayById(dayId);
+
+  if (!day) {
+    const error = new Error('Day not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const sales = await repository.findSalesByDayId(dayId);
+  const expenses = await repository.findExpensesByDayId(dayId);
+
+  return { ...day, sales, expenses };
+}
+
+async function listDays() {
+  return repository.findAllDays();
+}
+
+
+module.exports = { createDay, addSale, listSales, addExpense, listExpenses, completeDay, getDayDetails, listDays };

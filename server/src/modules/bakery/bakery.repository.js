@@ -123,9 +123,24 @@ async function deleteExpense(expenseId) {
   if (error) throw error;
 }
 
+
+// Returns every bakery day, oldest first -- the frontend groups
+// these into weeks for display, since we don't store weeks separately.
+async function findAllDays() {
+  const { data, error } = await supabase
+    .from('bakery_days')
+    .select('*')
+    .order('date', { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
+
 module.exports = {
   findMostRecentDay,
   findDayByDate,
+  findAllDays,
   findDayById,
   createDay,
   createSale,

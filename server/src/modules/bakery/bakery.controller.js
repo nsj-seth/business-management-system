@@ -85,4 +85,27 @@ async function completeDay(req, res) {
   }
 }
 
-module.exports = { createDay, addSale, listSales, addExpense, listExpenses, completeDay };
+
+async function getDay(req, res) {
+  const { dayId } = req.params;
+
+  try {
+    const day = await bakeryService.getDayDetails(dayId);
+    res.json({ day });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({ error: error.message });
+  }
+}
+
+async function listDays(req, res) {
+  try {
+    const days = await bakeryService.listDays();
+    res.json({ days });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+
+module.exports = { createDay, addSale, listSales, addExpense, listExpenses, completeDay, getDay, listDays };
