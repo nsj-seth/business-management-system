@@ -1,15 +1,25 @@
 const express = require('express');
+const supabase = require('./config/supabaseClient');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Allows Express to understand JSON request bodies (req.body)
 app.use(express.json());
 
-// A simple route to prove the server is alive and responding.
-// This has nothing to do with Supabase yet -- just Node + Express.
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// A temporary test route to prove Express can reach Supabase.
+// We'll remove or replace this once real routes exist.
+app.get('/api/health/db', async (req, res) => {
+  const { data, error } = await supabase.from('profiles').select('*').limit(1);
+
+  if (error) {
+    return res.status(500).json({ status: 'error', message: error.message });
+  }
+
+  res.json({ status: 'ok', message: 'Connected to Supabase', rowCount: data.length });
 });
 
 app.listen(PORT, () => {
