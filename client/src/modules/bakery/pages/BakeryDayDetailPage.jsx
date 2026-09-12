@@ -78,31 +78,32 @@ export function BakeryDayDetailPage() {
   const isLocked = day.status === 'completed';
 
   return (
-    <div style={{ maxWidth: 640, margin: '2rem auto', fontFamily: 'sans-serif' }}>
+    <div className="page">
       <Link to="/bakery">&larr; Back to days</Link>
       <h1>
-        {day.date} <span style={{ fontSize: '0.9rem', color: '#666' }}>({day.status})</span>
+        {day.date} <span className={`badge badge-${day.status}`}>{day.status}</span>
       </h1>
 
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+      {errorMessage && <p className="error-text">{errorMessage}</p>}
 
-      <section style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1.5rem' }}>
+      <div className="card">
         <h2>Daily Summary</h2>
-        <p>Opening Balance: {day.opening_balance}</p>
-        <p>Total Sales: {day.total_sales}</p>
-        <p>Total Expenses: {day.total_expenses}</p>
-        <p><strong>Closing Balance: {day.closing_balance}</strong></p>
-      </section>
+        <div className="summary-row"><span>Opening Balance</span><span>{day.opening_balance}</span></div>
+        <div className="summary-row"><span>Total Sales</span><span>{day.total_sales}</span></div>
+        <div className="summary-row"><span>Total Expenses</span><span>{day.total_expenses}</span></div>
+        <div className="summary-row"><span>Closing Balance</span><span>{day.closing_balance}</span></div>
+      </div>
 
-      <section style={{ marginBottom: '1.5rem' }}>
+      <div className="card">
         <h2>Sales</h2>
-        <ul>
-          {day.sales.map((sale) => (
-            <li key={sale.id}>{sale.salesperson} — {sale.amount}</li>
-          ))}
-        </ul>
+        {day.sales.length === 0 && <p className="text-muted">No sales yet.</p>}
+        {day.sales.map((sale) => (
+          <div className="summary-row" key={sale.id}>
+            <span>{sale.salesperson}</span><span>{sale.amount}</span>
+          </div>
+        ))}
         {!isLocked && (
-          <form onSubmit={handleAddSale}>
+          <form onSubmit={handleAddSale} className="inline-form">
             <input
               placeholder="Salesperson"
               value={salesperson}
@@ -118,20 +119,21 @@ export function BakeryDayDetailPage() {
               min="0"
               step="0.01"
             />
-            <button type="submit">+ Add Sale</button>
+            <button type="submit" className="btn">+ Add Sale</button>
           </form>
         )}
-      </section>
+      </div>
 
-      <section style={{ marginBottom: '1.5rem' }}>
+      <div className="card">
         <h2>Expenses</h2>
-        <ul>
-          {day.expenses.map((expense) => (
-            <li key={expense.id}>{expense.description} — {expense.amount}</li>
-          ))}
-        </ul>
+        {day.expenses.length === 0 && <p className="text-muted">No expenses yet.</p>}
+        {day.expenses.map((expense) => (
+          <div className="summary-row" key={expense.id}>
+            <span>{expense.description}</span><span>{expense.amount}</span>
+          </div>
+        ))}
         {!isLocked && (
-          <form onSubmit={handleAddExpense}>
+          <form onSubmit={handleAddExpense} className="inline-form">
             <input
               placeholder="Description"
               value={description}
@@ -147,13 +149,13 @@ export function BakeryDayDetailPage() {
               min="0"
               step="0.01"
             />
-            <button type="submit">+ Add Expense</button>
+            <button type="submit" className="btn">+ Add Expense</button>
           </form>
         )}
-      </section>
+      </div>
 
       {!isLocked && (
-        <button onClick={handleCompleteDay}>Complete Day</button>
+        <button onClick={handleCompleteDay} className="btn">Complete Day</button>
       )}
     </div>
   );

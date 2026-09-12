@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
 import { supabase } from './lib/supabaseClient';
 import { useAuth } from './contexts/AuthContext';
-import { Routes, Route, Link } from 'react-router-dom';
 import { BakeryDaysPage } from './modules/bakery/pages/BakeryDaysPage';
 import { BakeryDayDetailPage } from './modules/bakery/pages/BakeryDayDetailPage';
 
@@ -17,45 +17,38 @@ function LoginForm() {
     setIsLoading(true);
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-// if (data.session) {
-//   console.log('token:', data.session.access_token);
-// }
+
     setIsLoading(false);
 
     if (error) {
       setErrorMessage(error.message);
     }
-    // No need to manually handle success here -- onAuthStateChange
-    // in AuthContext picks up the new session automatically, and
-    // the whole app re-renders to show the logged-in view.
   };
 
   return (
-    <div style={{ maxWidth: 320, margin: '4rem auto', fontFamily: 'sans-serif' }}>
+    <div className="login-page">
       <h1>Business Management System</h1>
-      <form onSubmit={handleLogin}>
-        <div style={{ marginBottom: '1rem' }}>
+      <form onSubmit={handleLogin} className="card">
+        <div className="form-field">
           <label>Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ display: 'block', width: '100%' }}
           />
         </div>
-        <div style={{ marginBottom: '1rem' }}>
+        <div className="form-field">
           <label>Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            style={{ display: 'block', width: '100%' }}
           />
         </div>
-        {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-        <button type="submit" disabled={isLoading}>
+        {errorMessage && <p className="error-text">{errorMessage}</p>}
+        <button type="submit" className="btn" disabled={isLoading}>
           {isLoading ? 'Logging in...' : 'Log in'}
         </button>
       </form>
@@ -67,17 +60,28 @@ function Dashboard() {
   const { user, signOut } = useAuth();
 
   return (
-    <div style={{ fontFamily: 'sans-serif' }}>
-      <nav style={{ padding: '1rem', borderBottom: '1px solid #ccc' }}>
-        <Link to="/" style={{ marginRight: '1rem' }}>Home</Link>
-        <Link to="/bakery" style={{ marginRight: '1rem' }}>Bakery</Link>
-        <span style={{ float: 'right' }}>
-          {user.email} <button onClick={signOut}>Log out</button>
-        </span>
+    <div>
+      <nav className="navbar">
+        <div className="navbar-links">
+          <Link to="/">Home</Link>
+          <Link to="/bakery">Bakery</Link>
+        </div>
+        <div className="navbar-user">
+          <span>{user.email}</span>
+          <button onClick={signOut} className="btn btn-secondary">Log out</button>
+        </div>
       </nav>
 
       <Routes>
-        <Route path="/" element={<p style={{ padding: '1rem' }}>Welcome to the Business Management System.</p>} />
+        <Route
+          path="/"
+          element={
+            <div className="page">
+              <h1>Welcome</h1>
+              <p className="text-muted">AG Rose Business Management System</p>
+            </div>
+          }
+        />
         <Route path="/bakery" element={<BakeryDaysPage />} />
         <Route path="/bakery/days/:dayId" element={<BakeryDayDetailPage />} />
       </Routes>

@@ -51,43 +51,46 @@ export function BakeryDaysPage() {
 
   if (isLoading) return <p>Loading...</p>;
 
-  return (
-    <div style={{ maxWidth: 640, margin: '2rem auto', fontFamily: 'sans-serif' }}>
+    return (
+    <div className="page">
       <h1>Bakery</h1>
 
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+      {errorMessage && <p className="error-text">{errorMessage}</p>}
 
-      <button onClick={handleCreateNextDay} disabled={isCreating}>
+      <button onClick={handleCreateNextDay} disabled={isCreating} className="btn">
         {isCreating ? 'Creating...' : `Create ${getNextDate(days)}`}
       </button>
 
-      <table style={{ width: '100%', marginTop: '1.5rem', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: 'left' }}>Date</th>
-            <th style={{ textAlign: 'left' }}>Reference</th>
-            <th style={{ textAlign: 'right' }}>Closing Balance</th>
-            <th style={{ textAlign: 'left' }}>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {days.length === 0 && (
+      <div className="card" style={{ marginTop: '1.5rem' }}>
+        <table>
+          <thead>
             <tr>
-              <td colSpan={4}>No days yet.</td>
+              <th>Date</th>
+              <th>Reference</th>
+              <th style={{ textAlign: 'right' }}>Closing Balance</th>
+              <th>Status</th>
             </tr>
-          )}
-          {days.map((day) => (
-            <tr key={day.id}>
-              <td>
-                <Link to={`/bakery/days/${day.id}`}>{day.date}</Link>
-              </td>
-              <td>{day.reference_number}</td>
-              <td style={{ textAlign: 'right' }}>{day.closing_balance}</td>
-              <td>{day.status}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {days.length === 0 && (
+              <tr>
+                <td colSpan={4} className="text-muted">No days yet.</td>
+              </tr>
+            )}
+            {days.map((day) => (
+              <tr key={day.id}>
+                <td><Link to={`/bakery/days/${day.id}`}>{day.date}</Link></td>
+                <td>{day.reference_number}</td>
+                <td style={{ textAlign: 'right' }}>{day.closing_balance}</td>
+                <td>
+                  <span className={`badge badge-${day.status}`}>{day.status}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
+
 }
