@@ -2,11 +2,12 @@ const express = require('express');
 const supabase = require('./config/supabaseClient');
 const requireAuth = require('./middleware/requireAuth');
 const bakeryRoutes = require('./modules/bakery/bakery.routes');
-
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 app.use('/api/bakery', bakeryRoutes);
 

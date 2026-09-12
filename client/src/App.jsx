@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { supabase } from './lib/supabaseClient';
 import { useAuth } from './contexts/AuthContext';
-
+import { Routes, Route, Link } from 'react-router-dom';
+import { BakeryDaysPage } from './modules/bakery/pages/BakeryDaysPage';
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -64,10 +65,19 @@ function Dashboard() {
   const { user, signOut } = useAuth();
 
   return (
-    <div style={{ maxWidth: 480, margin: '4rem auto', fontFamily: 'sans-serif' }}>
-      <h1>Business Management System</h1>
-      <p>Logged in as {user.email}</p>
-      <button onClick={signOut}>Log out</button>
+    <div style={{ fontFamily: 'sans-serif' }}>
+      <nav style={{ padding: '1rem', borderBottom: '1px solid #ccc' }}>
+        <Link to="/" style={{ marginRight: '1rem' }}>Home</Link>
+        <Link to="/bakery" style={{ marginRight: '1rem' }}>Bakery</Link>
+        <span style={{ float: 'right' }}>
+          {user.email} <button onClick={signOut}>Log out</button>
+        </span>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<p style={{ padding: '1rem' }}>Welcome to the Business Management System.</p>} />
+        <Route path="/bakery" element={<BakeryDaysPage />} />
+      </Routes>
     </div>
   );
 }
