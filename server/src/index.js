@@ -1,6 +1,6 @@
 const express = require('express');
 const supabase = require('./config/supabaseClient');
-
+const requireAuth = require('./middleware/requireAuth');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -20,6 +20,11 @@ app.get('/api/health/db', async (req, res) => {
   }
 
   res.json({ status: 'ok', message: 'Connected to Supabase', rowCount: data.length });
+});
+
+// A protected route: only accessible with a valid session token.
+app.get('/api/me', requireAuth, async (req, res) => {
+  res.json({ user: req.user });
 });
 
 app.listen(PORT, () => {
