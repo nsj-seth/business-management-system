@@ -73,5 +73,16 @@ async function listExpenses(req, res) {
   }
 }
 
+async function completeDay(req, res) {
+  const { dayId } = req.params;
 
-module.exports = { createDay, addSale, listSales, addExpense, listExpenses };
+  try {
+    const completedDay = await bakeryService.completeDay(dayId);
+    res.json({ day: completedDay });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({ error: error.message });
+  }
+}
+
+module.exports = { createDay, addSale, listSales, addExpense, listExpenses, completeDay };

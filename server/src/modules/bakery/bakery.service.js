@@ -170,4 +170,32 @@ async function listExpenses(dayId) {
   return repository.findExpensesByDayId(dayId);
 }
 
-module.exports = { createDay, addSale, listSales, addExpense, listExpenses };
+
+const supabase = require('../../config/supabaseClient');
+
+async function completeDay(dayId) {
+  const day = await repository.findDayById(dayId);
+
+  if (!day) {
+    const error = new Error('Day not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const { data, error: rpcError } = await supabase.rpc('complete_bakery_day', {
+    p_day_id: dayId,
+  });
+
+  if (rpcError) {
+    if (rpcError.message.includes('already completed')) {
+      const error = new Error('This day is already completed');
+      error.statusCode = 409;
+      throw error;
+    }
+    throw rpcError;
+  }
+
+  return data;
+}
+
+module.exports = { createDay, addSale, listSales, addExpense, listExpenses, completeDay };
