@@ -8,5 +8,10 @@ const router = express.Router();
 router.use(requireAuth);
 
 router.post('/days', bakeryController.createDay);
+router.post('/days/:dayId/sales', bakeryController.addSale);
+router.get('/days/:dayId/sales', bakeryController.listSales);
+router.post('/days/:dayId/expenses', bakeryController.addExpense);
+router.get('/days/:dayId/expenses', bakeryController.listExpenses);
+
 
 module.exports = router;
