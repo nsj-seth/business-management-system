@@ -3,6 +3,8 @@ import { supabase } from './lib/supabaseClient';
 import { useAuth } from './contexts/AuthContext';
 import { Routes, Route, Link } from 'react-router-dom';
 import { BakeryDaysPage } from './modules/bakery/pages/BakeryDaysPage';
+import { BakeryDayDetailPage } from './modules/bakery/pages/BakeryDayDetailPage';
+
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -77,6 +79,7 @@ function Dashboard() {
       <Routes>
         <Route path="/" element={<p style={{ padding: '1rem' }}>Welcome to the Business Management System.</p>} />
         <Route path="/bakery" element={<BakeryDaysPage />} />
+        <Route path="/bakery/days/:dayId" element={<BakeryDayDetailPage />} />
       </Routes>
     </div>
   );
