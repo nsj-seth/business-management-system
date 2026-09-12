@@ -1,10 +1,14 @@
 const express = require('express');
 const supabase = require('./config/supabaseClient');
 const requireAuth = require('./middleware/requireAuth');
+const bakeryRoutes = require('./modules/bakery/bakery.routes');
+
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
+app.use('/api/bakery', bakeryRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
@@ -30,3 +34,4 @@ app.get('/api/me', requireAuth, async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
+

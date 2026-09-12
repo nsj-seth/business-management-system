@@ -14,7 +14,9 @@ function LoginForm() {
     setIsLoading(true);
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-
+// if (data.session) {
+//   console.log('token:', data.session.access_token);
+// }
     setIsLoading(false);
 
     if (error) {
