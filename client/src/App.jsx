@@ -5,6 +5,7 @@ import { useAuth } from './contexts/AuthContext';
 import { BakeryDaysPage } from './modules/bakery/pages/BakeryDaysPage';
 import { BakeryDayDetailPage } from './modules/bakery/pages/BakeryDayDetailPage';
 import { ReservesPage } from './modules/reserves/pages/ReservesPage';
+import { CementPage } from './modules/cement/pages/CementPage';
 
 
 function LoginForm() {
@@ -70,6 +71,7 @@ function Dashboard() {
           <Link to="/">Home</Link>
           <Link to="/bakery">Bakery</Link>
           <Link to="/reserves">Reserves</Link>
+          <Link to="/cement">Cement</Link>
         </div>
         <div className="navbar-user">
           <span>{user.email}</span>
@@ -90,6 +92,7 @@ function Dashboard() {
         <Route path="/bakery" element={<BakeryDaysPage />} />
         <Route path="/bakery/days/:dayId" element={<BakeryDayDetailPage />} />
         <Route path="/reserves" element={<ReservesPage />} />
+        <Route path="/cement" element={<CementPage />} />
       </Routes>
     </div>
   );
