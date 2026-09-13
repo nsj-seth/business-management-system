@@ -33,4 +33,38 @@ async function getOpeningState(req, res) {
   }
 }
 
-module.exports = { setupOpeningState, getOpeningState };
+
+async function addTransaction(req, res) {
+  const { date, particular, type, amount } = req.body;
+
+  if (!date || !particular || !type || amount === undefined) {
+    return res.status(400).json({ error: 'date, particular, type, and amount are required' });
+  }
+
+  try {
+    const transaction = await reservesService.addTransaction({
+      date,
+      particular,
+      type,
+      amount,
+      userId: req.user.id,
+    });
+    res.status(201).json({ transaction });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({ error: error.message });
+  }
+}
+
+async function listTransactions(req, res) {
+  try {
+    const transactions = await reservesService.listTransactions();
+    res.json({ transactions });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+
+
+module.exports = { setupOpeningState, getOpeningState, addTransaction, listTransactions };

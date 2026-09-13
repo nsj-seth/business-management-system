@@ -8,5 +8,8 @@ router.use(requireAuth);
 
 router.post('/opening-state', reservesController.setupOpeningState);
 router.get('/opening-state', reservesController.getOpeningState);
+router.post('/transactions', reservesController.addTransaction);
+router.get('/transactions', reservesController.listTransactions);
+
 
 module.exports = router;
