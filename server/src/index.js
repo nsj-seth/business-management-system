@@ -3,6 +3,8 @@ const supabase = require('./config/supabaseClient');
 const requireAuth = require('./middleware/requireAuth');
 const bakeryRoutes = require('./modules/bakery/bakery.routes');
 const cors = require('cors');
+const reservesRoutes = require('./modules/reserves/reserves.routes');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,6 +33,10 @@ app.get('/api/health/db', async (req, res) => {
 app.get('/api/me', requireAuth, async (req, res) => {
   res.json({ user: req.user });
 });
+
+
+app.use('/api/reserves', reservesRoutes);
+
 
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
