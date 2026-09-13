@@ -4,6 +4,7 @@ const requireAuth = require('./middleware/requireAuth');
 const bakeryRoutes = require('./modules/bakery/bakery.routes');
 const cors = require('cors');
 const reservesRoutes = require('./modules/reserves/reserves.routes');
+const cementRoutes = require('./modules/cement/cement.routes');
 
 
 const app = express();
@@ -36,6 +37,8 @@ app.get('/api/me', requireAuth, async (req, res) => {
 
 
 app.use('/api/reserves', reservesRoutes);
+
+app.use('/api/cement', cementRoutes);
 
 
 app.listen(PORT, () => {

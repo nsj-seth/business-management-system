@@ -123,3 +123,38 @@ alter table bakery_sales enable row level security;
 alter table bakery_expenses enable row level security;
 alter table reserve_opening_state enable row level security;
 alter table reserve_transactions enable row level security;
+
+
+
+-- ============================================================
+-- CEMENT SCHEMA
+-- ============================================================
+
+create table cement_opening_state (
+  id uuid primary key default gen_random_uuid(),
+  as_of_date date not null,
+  opening_balance numeric(12, 2) not null,
+  created_at timestamptz not null default now(),
+  created_by uuid references profiles(id)
+);
+
+create table cement_transactions (
+  id uuid primary key default gen_random_uuid(),
+  reference_number text not null unique,
+  date date not null,
+  type text not null check (type in ('sale', 'purchase')),
+  particular text not null,
+  bags integer not null check (bags > 0),
+  price_per_bag numeric(12, 2) not null check (price_per_bag > 0),
+  amount numeric(12, 2) not null,
+  cr numeric(12, 2) not null,
+  dr numeric(12, 2) not null,
+  balance numeric(12, 2) not null,
+  created_at timestamptz not null default now(),
+  created_by uuid references profiles(id)
+);
+
+create index idx_cement_transactions_date on cement_transactions(date);
+
+alter table cement_opening_state enable row level security;
+alter table cement_transactions enable row level security;
