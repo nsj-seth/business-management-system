@@ -4,6 +4,8 @@ import { supabase } from './lib/supabaseClient';
 import { useAuth } from './contexts/AuthContext';
 import { BakeryDaysPage } from './modules/bakery/pages/BakeryDaysPage';
 import { BakeryDayDetailPage } from './modules/bakery/pages/BakeryDayDetailPage';
+import { ReservesPage } from './modules/reserves/pages/ReservesPage';
+
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -16,8 +18,10 @@ function LoginForm() {
     setErrorMessage('');
     setIsLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-
+   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+if (data.session) {
+  console.log('token:', data.session.access_token);
+}
     setIsLoading(false);
 
     if (error) {
@@ -65,6 +69,7 @@ function Dashboard() {
         <div className="navbar-links">
           <Link to="/">Home</Link>
           <Link to="/bakery">Bakery</Link>
+          <Link to="/reserves">Reserves</Link>
         </div>
         <div className="navbar-user">
           <span>{user.email}</span>
@@ -84,6 +89,7 @@ function Dashboard() {
         />
         <Route path="/bakery" element={<BakeryDaysPage />} />
         <Route path="/bakery/days/:dayId" element={<BakeryDayDetailPage />} />
+        <Route path="/reserves" element={<ReservesPage />} />
       </Routes>
     </div>
   );
