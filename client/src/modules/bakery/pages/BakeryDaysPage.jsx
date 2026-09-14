@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { bakeryApi } from '../services/bakeryApi';
+import { Card } from '../../../components/ui/Card';
+import { Badge } from '../../../components/ui/Badge';
+import { Button } from '../../../components/ui/Button';
+import { Table, Th, Td } from '../../../components/ui/Table';
 
 // Given the most recent day, works out the date that should be
 // created next: the day after it, or today if no days exist yet.
@@ -51,45 +55,57 @@ export function BakeryDaysPage() {
 
   if (isLoading) return <p>Loading...</p>;
 
-    return (
-    <div className="page">
-      <h1>Bakery</h1>
+  return (
+    <div className="space-y-4">
+      {errorMessage && (
+        <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
+          {errorMessage}
+        </div>
+      )}
 
-      {errorMessage && <p className="error-text">{errorMessage}</p>}
+      <div className="flex justify-end">
+        <Button onClick={handleCreateNextDay} disabled={isCreating}>
+          {isCreating ? 'Creating...' : `Create ${getNextDate(days)}`}
+        </Button>
+      </div>
 
-      <button onClick={handleCreateNextDay} disabled={isCreating} className="btn">
-        {isCreating ? 'Creating...' : `Create ${getNextDate(days)}`}
-      </button>
-
-      <div className="card" style={{ marginTop: '1.5rem' }}>
-        <table>
+      <Card>
+        <Table>
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Reference</th>
-              <th style={{ textAlign: 'right' }}>Closing Balance</th>
-              <th>Status</th>
+              <Th>Date</Th>
+              <Th>Reference</Th>
+              <Th align="right">Closing Balance</Th>
+              <Th>Status</Th>
             </tr>
           </thead>
           <tbody>
             {days.length === 0 && (
               <tr>
-                <td colSpan={4} className="text-muted">No days yet.</td>
+                <Td>
+                  <span className="text-text-muted">No days yet.</span>
+                </Td>
               </tr>
             )}
             {days.map((day) => (
-              <tr key={day.id}>
-                <td><Link to={`/bakery/days/${day.id}`}>{day.date}</Link></td>
-                <td>{day.reference_number}</td>
-                <td style={{ textAlign: 'right' }}>{day.closing_balance}</td>
-                <td>
-                  <span className={`badge badge-${day.status}`}>{day.status}</span>
-                </td>
+              <tr key={day.id} className="hover:bg-panel-bg">
+                <Td>
+                  <Link to={`/bakery/days/${day.id}`} className="text-accent hover:underline">
+                    {day.date}
+                  </Link>
+                </Td>
+                <Td>{day.reference_number}</Td>
+                <Td align="right">{day.closing_balance}</Td>
+                <Td>
+                  <Badge variant={day.status === 'completed' ? 'success' : 'warning'}>
+                    {day.status}
+                  </Badge>
+                </Td>
               </tr>
             ))}
           </tbody>
-        </table>
-      </div>
+        </Table>
+      </Card>
     </div>
   );
 
