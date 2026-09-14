@@ -10,7 +10,7 @@ const cementRoutes = require('./modules/cement/cement.routes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173' }));
 app.use(express.json());
 app.use('/api/bakery', bakeryRoutes);
 
