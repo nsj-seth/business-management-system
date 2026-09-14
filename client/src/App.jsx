@@ -6,6 +6,7 @@ import { BakeryDaysPage } from './modules/bakery/pages/BakeryDaysPage';
 import { BakeryDayDetailPage } from './modules/bakery/pages/BakeryDayDetailPage';
 import { ReservesPage } from './modules/reserves/pages/ReservesPage';
 import { CementPage } from './modules/cement/pages/CementPage';
+import { AppLayout } from './layouts/AppLayout';
 
 
 function LoginForm() {
@@ -61,40 +62,21 @@ if (data.session) {
   );
 }
 
+
 function Dashboard() {
-  const { user, signOut } = useAuth();
-
   return (
-    <div>
-      <nav className="navbar">
-        <div className="navbar-links">
-          <Link to="/">Home</Link>
-          <Link to="/bakery">Bakery</Link>
-          <Link to="/reserves">Reserves</Link>
-          <Link to="/cement">Cement</Link>
-        </div>
-        <div className="navbar-user">
-          <span>{user.email}</span>
-          <button onClick={signOut} className="btn btn-secondary">Log out</button>
-        </div>
-      </nav>
-
+    <AppLayout>
       <Routes>
         <Route
           path="/"
-          element={
-            <div className="page">
-              <h1>Welcome</h1>
-              <p className="text-muted">AG Rose Business Management System</p>
-            </div>
-          }
+          element={<p className="text-text-muted">Welcome to the Business Management System.</p>}
         />
         <Route path="/bakery" element={<BakeryDaysPage />} />
         <Route path="/bakery/days/:dayId" element={<BakeryDayDetailPage />} />
         <Route path="/reserves" element={<ReservesPage />} />
         <Route path="/cement" element={<CementPage />} />
       </Routes>
-    </div>
+    </AppLayout>
   );
 }
 
