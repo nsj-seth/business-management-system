@@ -12,8 +12,19 @@ export function Sidebar({ isMobileNavOpen, onClose }) {
         ${isMobileNavOpen ? 'translate-x-0' : '-translate-x-full'}
       `}
     >
-      <div className="h-16 flex items-center justify-between px-6 border-b border-border">
-        <span className="text-lg font-bold text-text-primary">AG Rose BMS</span>
+
+      
+        <div className="h-16 flex items-center justify-between px-6 border-b border-border">
+       <div className="flex items-center gap-3">
+  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-400/10">
+    <span className="text-amber-400 text-xl">◈</span>
+  </div>
+
+  <span className="text-xl font-bold tracking-tight">
+    <span className="text-slate-100">AG Rose </span>
+    <span className="text-amber-400">BMS</span>
+  </span>
+</div>
         <button onClick={onClose} className="md:hidden text-text-muted">
           <X size={20} />
         </button>

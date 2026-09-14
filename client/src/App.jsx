@@ -32,8 +32,11 @@ function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-app-bg px-4">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-text-primary text-center mb-6">
-          Business Management System
+        <h1 className="text-4xl font-bold text-text-primary text-center mb-6">
+          <span className="text-xl font-bold tracking-tight">
+    <span className="text-slate-100">AG Rose </span>
+    <span className="text-amber-400">BMS</span>
+  </span>
         </h1>
         <div className="bg-surface border border-border rounded-lg p-6">
           <form onSubmit={handleLogin} className="space-y-4">
