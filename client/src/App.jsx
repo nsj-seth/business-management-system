@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { supabase } from './lib/supabaseClient';
 import { useAuth } from './contexts/AuthContext';
+import { AppLayout } from './layouts/AppLayout';
 import { BakeryDaysPage } from './modules/bakery/pages/BakeryDaysPage';
 import { BakeryDayDetailPage } from './modules/bakery/pages/BakeryDayDetailPage';
 import { ReservesPage } from './modules/reserves/pages/ReservesPage';
 import { CementPage } from './modules/cement/pages/CementPage';
-import { AppLayout } from './layouts/AppLayout';
-
+import { Spinner } from './components/ui/Spinner';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -20,10 +20,8 @@ function LoginForm() {
     setErrorMessage('');
     setIsLoading(true);
 
-   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-if (data.session) {
-  console.log('token:', data.session.access_token);
-}
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
     setIsLoading(false);
 
     if (error) {
@@ -32,36 +30,51 @@ if (data.session) {
   };
 
   return (
-    <div className="login-page">
-      <h1>Business Management System</h1>
-      <form onSubmit={handleLogin} className="card">
-        <div className="form-field">
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+    <div className="min-h-screen flex items-center justify-center bg-app-bg px-4">
+      <div className="w-full max-w-sm">
+        <h1 className="text-2xl font-bold text-text-primary text-center mb-6">
+          Business Management System
+        </h1>
+        <div className="bg-surface border border-border rounded-lg p-6">
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-text-muted mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full bg-panel-bg border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-text-muted mb-1">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full bg-panel-bg border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+            {errorMessage && (
+              <div className="bg-danger-bg text-danger text-sm px-3 py-2 rounded-md">
+                {errorMessage}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium py-2 rounded-md transition-colors disabled:opacity-50"
+            >
+              {isLoading ? 'Logging in...' : 'Log in'}
+            </button>
+          </form>
         </div>
-        <div className="form-field">
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        {errorMessage && <p className="error-text">{errorMessage}</p>}
-        <button type="submit" className="btn" disabled={isLoading}>
-          {isLoading ? 'Logging in...' : 'Log in'}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }
-
 
 function Dashboard() {
   return (
@@ -83,9 +96,13 @@ function Dashboard() {
 function App() {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return <p style={{ textAlign: 'center', marginTop: '4rem' }}>Loading...</p>;
-  }
+ if (isLoading) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-app-bg">
+      <Spinner size={32} className="text-accent" />
+    </div>
+  );
+}
 
   return user ? <Dashboard /> : <LoginForm />;
 }

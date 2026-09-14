@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
 import { reservesApi } from '../services/reservesApi';
+import { Card } from '../../../components/ui/Card';
+import { Badge } from '../../../components/ui/Badge';
+import { Button } from '../../../components/ui/Button';
+import { Table, Th, Td } from '../../../components/ui/Table';
+import { Spinner } from '../../../components/ui/Spinner';
 
 function SetupForm({ onSetupComplete }) {
   const [asOfDate, setAsOfDate] = useState('');
@@ -28,62 +33,71 @@ function SetupForm({ onSetupComplete }) {
     }
   }
 
-  return (
-    <div className="page">
-      <h1>Reserves Setup</h1>
-      <p className="text-muted">
-        Enter the existing figures from the physical ledger. This is a one-time
-        setup — new digital transactions will continue from these values.
+   return (
+    <div className="max-w-md space-y-4">
+      <p className="text-sm text-text-muted">
+        Enter the existing figures from the physical ledger. This is a
+        one-time setup — new digital transactions will continue from these values.
       </p>
 
-      {errorMessage && <p className="error-text">{errorMessage}</p>}
+      {errorMessage && (
+        <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
+          {errorMessage}
+        </div>
+      )}
 
-      <form onSubmit={handleSubmit} className="card">
-        <div className="form-field">
-          <label>As-of Date</label>
-          <input
-            type="date"
-            value={asOfDate}
-            onChange={(e) => setAsOfDate(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-field">
-          <label>Existing Cumulative Profit</label>
-          <input
-            type="number"
-            value={cumulativeProfit}
-            onChange={(e) => setCumulativeProfit(e.target.value)}
-            required
-            min="0"
-            step="0.01"
-          />
-        </div>
-        <div className="form-field">
-          <label>Existing Cumulative Expense</label>
-          <input
-            type="number"
-            value={cumulativeExpense}
-            onChange={(e) => setCumulativeExpense(e.target.value)}
-            required
-            min="0"
-            step="0.01"
-          />
-        </div>
-        <div className="form-field">
-          <label>Existing Reserve Balance</label>
-          <input
-            type="number"
-            value={balance}
-            onChange={(e) => setBalance(e.target.value)}
-            required
-            step="0.01"
-          />
-        </div>
-        <button type="submit" className="btn" disabled={isSaving}>
-          {isSaving ? 'Saving...' : 'Start Digital Records'}
-        </button>
-      </form>
+      <Card>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-1">As-of Date</label>
+            <input
+              type="date"
+              value={asOfDate}
+              onChange={(e) => setAsOfDate(e.target.value)}
+              required
+              className="w-full bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-1">Existing Cumulative Profit</label>
+            <input
+              type="number"
+              value={cumulativeProfit}
+              onChange={(e) => setCumulativeProfit(e.target.value)}
+              required
+              min="0"
+              step="0.01"
+              className="w-full bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-1">Existing Cumulative Expense</label>
+            <input
+              type="number"
+              value={cumulativeExpense}
+              onChange={(e) => setCumulativeExpense(e.target.value)}
+              required
+              min="0"
+              step="0.01"
+              className="w-full bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-1">Existing Reserve Balance</label>
+            <input
+              type="number"
+              value={balance}
+              onChange={(e) => setBalance(e.target.value)}
+              required
+              step="0.01"
+              className="w-full bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+          <Button type="submit" isLoading={isSaving}>
+            {isSaving ? 'Saving...' : 'Start Digital Records'}
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }
@@ -97,6 +111,7 @@ function TransactionLedger({ openingState }) {
   const [particular, setParticular] = useState('');
   const [type, setType] = useState('profit');
   const [amount, setAmount] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function loadTransactions() {
     setIsLoading(true);
@@ -115,52 +130,63 @@ function TransactionLedger({ openingState }) {
   }, []);
 
   async function handleAddTransaction(event) {
-    event.preventDefault();
-    setErrorMessage('');
-    try {
-      await reservesApi.addTransaction(date, particular, type, Number(amount));
-      setDate('');
-      setParticular('');
-      setAmount('');
-      await loadTransactions();
-    } catch (error) {
-      setErrorMessage(error.message);
-    }
+  event.preventDefault();
+  setErrorMessage('');
+  setIsSubmitting(true);
+  try {
+    await reservesApi.addTransaction(date, particular, type, Number(amount));
+    setDate('');
+    setParticular('');
+    setAmount('');
+    await loadTransactions();
+  } catch (error) {
+    setErrorMessage(error.message);
+  } finally {
+    setIsSubmitting(false);
   }
+}
 
   const currentBalance = transactions.length > 0
     ? transactions[transactions.length - 1].balance
     : openingState.opening_balance;
 
-  return (
-    <div className="page">
-      <h1>Reserves</h1>
-
-      <div className="card">
-        <div className="summary-row">
-          <span>Current Balance</span>
-          <span>{currentBalance}</span>
+   return (
+    <div className="space-y-4">
+      <Card>
+        <div className="flex justify-between items-baseline">
+          <span className="text-sm text-text-muted">Current Balance</span>
+          <span className="text-lg font-semibold text-text-primary">{currentBalance}</span>
         </div>
-      </div>
+      </Card>
 
-      {errorMessage && <p className="error-text">{errorMessage}</p>}
+      {errorMessage && (
+        <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
+          {errorMessage}
+        </div>
+      )}
 
-      <div className="card">
-        <h2>Add Transaction</h2>
-        <form onSubmit={handleAddTransaction} className="inline-form">
+      <Card>
+        <h3 className="text-sm font-medium text-text-muted mb-3">Add Transaction</h3>
+        <form onSubmit={handleAddTransaction} className="flex flex-wrap gap-2">
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
+            className="bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
           />
           <input
             placeholder="Particular"
             value={particular}
             onChange={(e) => setParticular(e.target.value)}
             required
+            className="flex-1 min-w-[140px] bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
           />
-          <select value={type} onChange={(e) => setType(e.target.value)}>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+          >
             <option value="profit">Profit</option>
             <option value="expense">Expense</option>
           </select>
@@ -172,46 +198,45 @@ function TransactionLedger({ openingState }) {
             required
             min="0"
             step="0.01"
+            className="w-32 bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
           />
-          <button type="submit" className="btn">Add</button>
+          <Button type="submit" isLoading={isSubmitting}>Add</Button>
         </form>
-      </div>
+      </Card>
 
-      <div className="card">
-        <h2>History</h2>
-        {isLoading && <p>Loading...</p>}
+      <Card>
+        <h3 className="text-sm font-medium text-text-muted mb-3">History</h3>
+        {isLoading && <p className="text-sm text-text-muted">Loading...</p>}
         {!isLoading && transactions.length === 0 && (
-          <p className="text-muted">No transactions yet.</p>
+          <p className="text-sm text-text-muted">No transactions yet.</p>
         )}
         {!isLoading && transactions.length > 0 && (
-          <table>
+          <Table>
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Particular</th>
-                <th>Type</th>
-                <th style={{ textAlign: 'right' }}>Amount</th>
-                <th style={{ textAlign: 'right' }}>Balance</th>
+                <Th>Date</Th>
+                <Th>Particular</Th>
+                <Th>Type</Th>
+                <Th align="right">Amount</Th>
+                <Th align="right">Balance</Th>
               </tr>
             </thead>
             <tbody>
               {transactions.map((tx) => (
-                <tr key={tx.id}>
-                  <td>{tx.date}</td>
-                  <td>{tx.particular}</td>
-                  <td>
-                    <span className={`badge ${tx.type === 'profit' ? 'badge-completed' : 'badge-open'}`}>
-                      {tx.type}
-                    </span>
-                  </td>
-                  <td style={{ textAlign: 'right' }}>{tx.amount}</td>
-                  <td style={{ textAlign: 'right' }}>{tx.balance}</td>
+                <tr key={tx.id} className="hover:bg-panel-bg">
+                  <Td>{tx.date}</Td>
+                  <Td>{tx.particular}</Td>
+                  <Td>
+                    <Badge variant={tx.type === 'profit' ? 'success' : 'danger'}>{tx.type}</Badge>
+                  </Td>
+                  <Td align="right">{tx.amount}</Td>
+                  <Td align="right">{tx.balance}</Td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
@@ -233,8 +258,8 @@ export function ReservesPage() {
     loadOpeningState();
   }, []);
 
-  if (errorMessage) return <p className="error-text">{errorMessage}</p>;
-  if (openingState === undefined) return <p>Loading...</p>;
+    if (errorMessage) return <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">{errorMessage}</div>;
+  if (openingState === undefined) return <Spinner size={24} className="text-accent" />;
 
   return openingState
     ? <TransactionLedger openingState={openingState} />

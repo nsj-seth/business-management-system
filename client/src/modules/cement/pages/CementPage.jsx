@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
 import { cementApi } from '../services/cementApi';
+import { Card } from '../../../components/ui/Card';
+import { Button } from '../../../components/ui/Button';
+import { Table, Th, Td } from '../../../components/ui/Table';
+import { Spinner } from '../../../components/ui/Spinner';
 
 function SetupForm({ onSetupComplete }) {
   const [asOfDate, setAsOfDate] = useState('');
@@ -21,40 +25,47 @@ function SetupForm({ onSetupComplete }) {
     }
   }
 
-  return (
-    <div className="page">
-      <h1>Cement Setup</h1>
-      <p className="text-muted">
+   return (
+    <div className="max-w-md space-y-4">
+      <p className="text-sm text-text-muted">
         Enter the existing balance from the physical Cement ledger. This is a
         one-time setup — new digital transactions will continue from this value.
       </p>
 
-      {errorMessage && <p className="error-text">{errorMessage}</p>}
+      {errorMessage && (
+        <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
+          {errorMessage}
+        </div>
+      )}
 
-      <form onSubmit={handleSubmit} className="card">
-        <div className="form-field">
-          <label>As-of Date</label>
-          <input
-            type="date"
-            value={asOfDate}
-            onChange={(e) => setAsOfDate(e.target.value)}
-            required
-          />
-        </div>
-        <div className="form-field">
-          <label>Existing Balance</label>
-          <input
-            type="number"
-            value={balance}
-            onChange={(e) => setBalance(e.target.value)}
-            required
-            step="0.01"
-          />
-        </div>
-        <button type="submit" className="btn" disabled={isSaving}>
-          {isSaving ? 'Saving...' : 'Start Digital Records'}
-        </button>
-      </form>
+      <Card>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-1">As-of Date</label>
+            <input
+              type="date"
+              value={asOfDate}
+              onChange={(e) => setAsOfDate(e.target.value)}
+              required
+              className="w-full bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-1">Existing Balance</label>
+            <input
+              type="number"
+              value={balance}
+              onChange={(e) => setBalance(e.target.value)}
+              required
+              step="0.01"
+              className="w-full bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+          <Button type="submit" isLoading={isSaving}>
+            {isSaving ? 'Saving...' : 'Start Digital Records'}
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }
@@ -70,6 +81,7 @@ function CementLedger() {
   const [bags, setBags] = useState('');
   const [pricePerBag, setPricePerBag] = useState('');
   const [particular, setParticular] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function loadData() {
     setIsLoading(true);
@@ -91,48 +103,74 @@ function CementLedger() {
     loadData();
   }, []);
 
-  async function handleAddTransaction(event) {
-    event.preventDefault();
-    setErrorMessage('');
-    try {
-      await cementApi.addTransaction(
-        date,
-        type,
-        Number(bags),
-        Number(pricePerBag),
-        particular || undefined
-      );
-      setDate('');
-      setBags('');
-      setPricePerBag('');
-      setParticular('');
-      await loadData();
-    } catch (error) {
-      setErrorMessage(error.message);
-    }
+ async function handleAddTransaction(event) {
+  event.preventDefault();
+  setErrorMessage('');
+  setIsSubmitting(true);
+  try {
+    await cementApi.addTransaction(
+      date,
+      type,
+      Number(bags),
+      Number(pricePerBag),
+      particular || undefined
+    );
+    setDate('');
+    setBags('');
+    setPricePerBag('');
+    setParticular('');
+    await loadData();
+  } catch (error) {
+    setErrorMessage(error.message);
+  } finally {
+    setIsSubmitting(false);
   }
+}
 
-  return (
-    <div className="page">
-      <h1>Cement</h1>
-
+   return (
+    <div className="space-y-4">
       {summary && (
-        <div className="card">
-          <div className="summary-row"><span>Current Balance</span><span>{summary.currentBalance}</span></div>
-          <div className="summary-row"><span>Total Bags Sold</span><span>{summary.totalBagsSold}</span></div>
-          <div className="summary-row"><span>Total Bags Purchased</span><span>{summary.totalBagsPurchased}</span></div>
-          <div className="summary-row"><span>Total Sales Value</span><span>{summary.totalSalesValue}</span></div>
-          <div className="summary-row"><span>Total Purchase Value</span><span>{summary.totalPurchaseValue}</span></div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Card>
+            <p className="text-xs text-text-muted mb-1">Current Balance</p>
+            <p className="text-lg font-semibold text-text-primary">{summary.currentBalance}</p>
+          </Card>
+          <Card>
+            <p className="text-xs text-text-muted mb-1">Bags Sold</p>
+            <p className="text-lg font-semibold text-text-primary">{summary.totalBagsSold}</p>
+          </Card>
+          <Card>
+            <p className="text-xs text-text-muted mb-1">Bags Purchased</p>
+            <p className="text-lg font-semibold text-text-primary">{summary.totalBagsPurchased}</p>
+          </Card>
+          <Card>
+            <p className="text-xs text-text-muted mb-1">Sales Value</p>
+            <p className="text-lg font-semibold text-text-primary">{summary.totalSalesValue}</p>
+          </Card>
         </div>
       )}
 
-      {errorMessage && <p className="error-text">{errorMessage}</p>}
+      {errorMessage && (
+        <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
+          {errorMessage}
+        </div>
+      )}
 
-      <div className="card">
-        <h2>Add Transaction</h2>
-        <form onSubmit={handleAddTransaction} className="inline-form">
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-          <select value={type} onChange={(e) => setType(e.target.value)}>
+      <Card>
+        <h3 className="text-sm font-medium text-text-muted mb-3">Add Transaction</h3>
+        <form onSubmit={handleAddTransaction} className="flex flex-wrap gap-2">
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+            className="bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+          />
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+          >
             <option value="sale">Sale</option>
             <option value="purchase">Purchase</option>
           </select>
@@ -144,6 +182,7 @@ function CementLedger() {
             required
             min="1"
             step="1"
+            className="w-24 bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
           />
           <input
             type="number"
@@ -153,51 +192,53 @@ function CementLedger() {
             required
             min="0.01"
             step="0.01"
+            className="w-32 bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
           />
           <input
             placeholder="Particular (optional)"
             value={particular}
             onChange={(e) => setParticular(e.target.value)}
+            className="flex-1 min-w-[140px] bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
           />
-          <button type="submit" className="btn">Add</button>
+          <Button type="submit" isLoading={isSubmitting}>Add</Button>
         </form>
-      </div>
+      </Card>
 
-      <div className="card">
-        <h2>Ledger</h2>
-        {isLoading && <p>Loading...</p>}
+      <Card>
+        <h3 className="text-sm font-medium text-text-muted mb-3">Ledger</h3>
+        {isLoading && <p className="text-sm text-text-muted">Loading...</p>}
         {!isLoading && transactions.length === 0 && (
-          <p className="text-muted">No transactions yet.</p>
+          <p className="text-sm text-text-muted">No transactions yet.</p>
         )}
         {!isLoading && transactions.length > 0 && (
-          <table>
+          <Table>
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Particular</th>
-                <th style={{ textAlign: 'right' }}>Bags</th>
-                <th style={{ textAlign: 'right' }}>Price/Bag</th>
-                <th style={{ textAlign: 'right' }}>CR</th>
-                <th style={{ textAlign: 'right' }}>DR</th>
-                <th style={{ textAlign: 'right' }}>Balance</th>
+                <Th>Date</Th>
+                <Th>Particular</Th>
+                <Th align="right">Bags</Th>
+                <Th align="right">Price/Bag</Th>
+                <Th align="right">CR</Th>
+                <Th align="right">DR</Th>
+                <Th align="right">Balance</Th>
               </tr>
             </thead>
             <tbody>
               {transactions.map((tx) => (
-                <tr key={tx.id}>
-                  <td>{tx.date}</td>
-                  <td>{tx.particular}</td>
-                  <td style={{ textAlign: 'right' }}>{tx.bags}</td>
-                  <td style={{ textAlign: 'right' }}>{tx.price_per_bag}</td>
-                  <td style={{ textAlign: 'right' }}>{tx.cr > 0 ? tx.cr : '—'}</td>
-                  <td style={{ textAlign: 'right' }}>{tx.dr > 0 ? tx.dr : '—'}</td>
-                  <td style={{ textAlign: 'right' }}>{tx.balance}</td>
+                <tr key={tx.id} className="hover:bg-panel-bg">
+                  <Td>{tx.date}</Td>
+                  <Td>{tx.particular}</Td>
+                  <Td align="right">{tx.bags}</Td>
+                  <Td align="right">{tx.price_per_bag}</Td>
+                  <Td align="right">{tx.cr > 0 ? tx.cr : '—'}</Td>
+                  <Td align="right">{tx.dr > 0 ? tx.dr : '—'}</Td>
+                  <Td align="right">{tx.balance}</Td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
@@ -219,8 +260,8 @@ export function CementPage() {
     loadOpeningState();
   }, []);
 
-  if (errorMessage) return <p className="error-text">{errorMessage}</p>;
-  if (openingState === undefined) return <p>Loading...</p>;
+  if (errorMessage) return <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">{errorMessage}</div>;
+if (openingState === undefined) return <Spinner size={24} className="text-accent" />;
 
   return openingState ? <CementLedger /> : <SetupForm onSetupComplete={loadOpeningState} />;
 }

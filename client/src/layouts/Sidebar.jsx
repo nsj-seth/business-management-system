@@ -13,7 +13,7 @@ export function Sidebar({ isMobileNavOpen, onClose }) {
       `}
     >
       <div className="h-16 flex items-center justify-between px-6 border-b border-border">
-        <span className="text-lg font-bold text-text-primary">BMS</span>
+        <span className="text-lg font-bold text-text-primary">AG Rose BMS</span>
         <button onClick={onClose} className="md:hidden text-text-muted">
           <X size={20} />
         </button>

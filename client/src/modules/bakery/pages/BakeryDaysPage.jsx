@@ -5,6 +5,8 @@ import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Table, Th, Td } from '../../../components/ui/Table';
+import { Spinner } from '../../../components/ui/Spinner';
+
 
 // Given the most recent day, works out the date that should be
 // created next: the day after it, or today if no days exist yet.
@@ -53,7 +55,7 @@ export function BakeryDaysPage() {
     }
   }
 
-  if (isLoading) return <p>Loading...</p>;
+if (isLoading) return <Spinner size={24} className="text-accent" />;
 
   return (
     <div className="space-y-4">
@@ -64,7 +66,7 @@ export function BakeryDaysPage() {
       )}
 
       <div className="flex justify-end">
-        <Button onClick={handleCreateNextDay} disabled={isCreating}>
+        <Button onClick={handleCreateNextDay} isLoading={isCreating}>
           {isCreating ? 'Creating...' : `Create ${getNextDate(days)}`}
         </Button>
       </div>
