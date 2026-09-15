@@ -4,6 +4,7 @@ import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Table, Th, Td } from '../../../components/ui/Table';
 import { Spinner } from '../../../components/ui/Spinner';
+import { Pagination } from '../../../components/ui/Pagination';
 
 function SetupForm({ onSetupComplete }) {
   const [asOfDate, setAsOfDate] = useState('');
@@ -82,6 +83,8 @@ function CementLedger() {
   const [pricePerBag, setPricePerBag] = useState('');
   const [particular, setParticular] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+const PAGE_SIZE = 20;
 
   async function loadData() {
     setIsLoading(true);
@@ -126,6 +129,10 @@ function CementLedger() {
     setIsSubmitting(false);
   }
 }
+
+const sortedTransactions = [...transactions].reverse(); // most recently entered first
+const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
 
    return (
     <div className="space-y-4">
@@ -224,20 +231,33 @@ function CementLedger() {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((tx) => (
-                <tr key={tx.id} className="hover:bg-panel-bg">
-                  <Td>{tx.date}</Td>
-                  <Td>{tx.particular}</Td>
-                  <Td align="right">{tx.bags}</Td>
-                  <Td align="right">{tx.price_per_bag}</Td>
-                  <Td align="right">{tx.cr > 0 ? tx.cr : '—'}</Td>
-                  <Td align="right">{tx.dr > 0 ? tx.dr : '—'}</Td>
-                  <Td align="right">{tx.balance}</Td>
-                </tr>
-              ))}
-            </tbody>
+  {paginatedTransactions.length === 0 && (
+    <tr>
+      <Td>
+        <span className="text-text-muted">No transactions yet.</span>
+      </Td>
+    </tr>
+  )}
+  {paginatedTransactions.map((tx) => (
+    <tr key={tx.id} className="hover:bg-panel-bg">
+      <Td>{tx.date}</Td>
+      <Td>{tx.particular}</Td>
+      <Td align="right">{tx.bags}</Td>
+      <Td align="right">{tx.price_per_bag}</Td>
+      <Td align="right">{tx.cr > 0 ? tx.cr : '—'}</Td>
+      <Td align="right">{tx.dr > 0 ? tx.dr : '—'}</Td>
+      <Td align="right">{tx.balance}</Td>
+    </tr>
+  ))}
+</tbody>
           </Table>
         )}
+        <Pagination
+  currentPage={currentPage}
+  totalItems={sortedTransactions.length}
+  pageSize={PAGE_SIZE}
+  onPageChange={setCurrentPage}
+/>
       </Card>
     </div>
   );

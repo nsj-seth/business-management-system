@@ -28,7 +28,6 @@ async function findMostRecentTransaction() {
   const { data, error } = await supabase
     .from('reserve_transactions')
     .select('*')
-    .order('date', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -52,7 +51,6 @@ async function findAllTransactions() {
   const { data, error } = await supabase
     .from('reserve_transactions')
     .select('*')
-    .order('date', { ascending: true })
     .order('created_at', { ascending: true });
 
   if (error) throw error;

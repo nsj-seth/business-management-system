@@ -5,6 +5,7 @@ import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Table, Th, Td } from '../../../components/ui/Table';
 import { Spinner } from '../../../components/ui/Spinner';
+import { Pagination } from '../../../components/ui/Pagination';
 
 function SetupForm({ onSetupComplete }) {
   const [asOfDate, setAsOfDate] = useState('');
@@ -112,6 +113,8 @@ function TransactionLedger({ openingState }) {
   const [type, setType] = useState('profit');
   const [amount, setAmount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+const PAGE_SIZE = 20;
 
   async function loadTransactions() {
     setIsLoading(true);
@@ -139,6 +142,7 @@ function TransactionLedger({ openingState }) {
     setParticular('');
     setAmount('');
     await loadTransactions();
+    setCurrentPage(1);
   } catch (error) {
     setErrorMessage(error.message);
   } finally {
@@ -149,6 +153,9 @@ function TransactionLedger({ openingState }) {
   const currentBalance = transactions.length > 0
     ? transactions[transactions.length - 1].balance
     : openingState.opening_balance;
+
+    const sortedTransactions = [...transactions].reverse(); // most recent first
+const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
    return (
     <div className="space-y-4">
@@ -222,20 +229,33 @@ function TransactionLedger({ openingState }) {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((tx) => (
-                <tr key={tx.id} className="hover:bg-panel-bg">
-                  <Td>{tx.date}</Td>
-                  <Td>{tx.particular}</Td>
-                  <Td>
-                    <Badge variant={tx.type === 'profit' ? 'success' : 'danger'}>{tx.type}</Badge>
-                  </Td>
-                  <Td align="right">{tx.amount}</Td>
-                  <Td align="right">{tx.balance}</Td>
-                </tr>
-              ))}
-            </tbody>
+  {paginatedTransactions.length === 0 && (
+    <tr>
+      <Td>
+        <span className="text-text-muted">No transactions yet.</span>
+      </Td>
+    </tr>
+  )}
+  {paginatedTransactions.map((tx) => (
+    <tr key={tx.id} className="hover:bg-panel-bg">
+      <Td>{tx.date}</Td>
+      <Td>{tx.particular}</Td>
+      <Td>
+        <Badge variant={tx.type === 'profit' ? 'success' : 'danger'}>{tx.type}</Badge>
+      </Td>
+      <Td align="right">{tx.amount}</Td>
+      <Td align="right">{tx.balance}</Td>
+    </tr>
+  ))}
+</tbody>
           </Table>
         )}
+        <Pagination
+  currentPage={currentPage}
+  totalItems={sortedTransactions.length}
+  pageSize={PAGE_SIZE}
+  onPageChange={setCurrentPage}
+/>
       </Card>
     </div>
   );

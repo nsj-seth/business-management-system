@@ -5,6 +5,7 @@ import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog';
 
 export function BakeryDayDetailPage() {
   const { dayId } = useParams();
@@ -21,6 +22,7 @@ export function BakeryDayDetailPage() {
   const [isSubmittingSale, setIsSubmittingSale] = useState(false);
 const [isSubmittingExpense, setIsSubmittingExpense] = useState(false);
 const [isCompleting, setIsCompleting] = useState(false);
+const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
 
   async function loadDay() {
     setIsLoading(true);
@@ -72,9 +74,6 @@ async function handleAddSale(event) {
 
 async function handleCompleteDay() {
   setErrorMessage('');
-  const confirmed = window.confirm('Completing this day will lock it permanently. Continue?');
-  if (!confirmed) return;
-
   setIsCompleting(true);
   try {
     await bakeryApi.completeDay(dayId);
@@ -83,6 +82,7 @@ async function handleCompleteDay() {
     setErrorMessage(error.message);
   } finally {
     setIsCompleting(false);
+    setShowCompleteConfirm(false);
   }
 }
 
@@ -203,10 +203,21 @@ async function handleCompleteDay() {
       </Card>
 
       {!isLocked && (
-        <Button onClick={handleCompleteDay} variant="secondary" isLoading={isCompleting}>
-          Complete Day
-        </Button>
+        <Button onClick={() => setShowCompleteConfirm(true)} variant="secondary" isLoading={isCompleting}>
+  Complete Day
+</Button>
       )}
+
+
+      <ConfirmDialog
+  isOpen={showCompleteConfirm}
+  title="Complete this day?"
+  message="Completing this day will lock it permanently. Sales and expenses can no longer be added once it's completed."
+  confirmLabel="Complete Day"
+  isLoading={isCompleting}
+  onConfirm={handleCompleteDay}
+  onCancel={() => setShowCompleteConfirm(false)}
+/>
     </div>
   );
 }
