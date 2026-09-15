@@ -8,6 +8,7 @@ import { BakeryDayDetailPage } from './modules/bakery/pages/BakeryDayDetailPage'
 import { ReservesPage } from './modules/reserves/pages/ReservesPage';
 import { CementPage } from './modules/cement/pages/CementPage';
 import { Spinner } from './components/ui/Spinner';
+import { DashboardPage } from './pages/DashboardPage';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -83,10 +84,7 @@ function Dashboard() {
   return (
     <AppLayout>
       <Routes>
-        <Route
-          path="/"
-          element={<p className="text-text-muted">Welcome to the Business Management System.</p>}
-        />
+        <Route path="/" element={<DashboardPage />} />
         <Route path="/bakery" element={<BakeryDaysPage />} />
         <Route path="/bakery/days/:dayId" element={<BakeryDayDetailPage />} />
         <Route path="/reserves" element={<ReservesPage />} />
