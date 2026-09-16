@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
   BarChart,
   Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -19,19 +19,57 @@ import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Spinner } from '../components/ui/Spinner';
 
-// Builds a simple "balance over time" series for a line chart from
-// an opening state plus a module's transaction history (both
-// already in entry order, oldest first).
-function buildBalanceTrend(openingBalance, transactions) {
-  const points = [{ label: 'Opening', balance: Number(openingBalance) }];
-  transactions.slice(-9).forEach((tx) => {
-    points.push({ label: tx.date, balance: Number(tx.balance) });
-  });
-  return points;
-}
-
 function todayDateString() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function getWeekStart(dateString) {
+  const date = new Date(`${dateString}T00:00:00Z`);
+  const day = date.getUTCDay();
+  const diffFromThursday = (day - 4 + 7) % 7;
+  date.setUTCDate(date.getUTCDate() - diffFromThursday);
+  return date.toISOString().slice(0, 10);
+}
+
+function aggregateSumByPeriod({ items, dateField, periodKeyFn, periodLabelFn, field1Name, field1Getter, field2Name, field2Getter, limit }) {
+  const buckets = {};
+  items.forEach((item) => {
+    const key = periodKeyFn(item[dateField]);
+    if (!buckets[key]) {
+      buckets[key] = { key, label: periodLabelFn(key), [field1Name]: 0, [field2Name]: 0 };
+    }
+    buckets[key][field1Name] += field1Getter(item);
+    buckets[key][field2Name] += field2Getter(item);
+  });
+  return Object.values(buckets).sort((a, b) => (a.key < b.key ? -1 : 1)).slice(-limit);
+}
+
+function buildSumDatasets(items, dateField, field1Name, field1Getter, field2Name, field2Getter) {
+  const common = { items, dateField, field1Name, field1Getter, field2Name, field2Getter };
+  return {
+    daily: aggregateSumByPeriod({ ...common, periodKeyFn: (d) => d, periodLabelFn: (k) => k.slice(5), limit: 7 }),
+    weekly: aggregateSumByPeriod({ ...common, periodKeyFn: getWeekStart, periodLabelFn: (k) => k.slice(5), limit: 8 }),
+    monthly: aggregateSumByPeriod({ ...common, periodKeyFn: (d) => d.slice(0, 7), periodLabelFn: (k) => k, limit: 6 }),
+  };
+}
+
+function aggregateBalanceByPeriod({ transactions, periodKeyFn, periodLabelFn, limit, openingBalance }) {
+  const buckets = {};
+  transactions.forEach((tx) => {
+    const key = periodKeyFn(tx.date);
+    buckets[key] = { key, label: periodLabelFn(key), balance: Number(tx.balance) };
+  });
+  const points = Object.values(buckets).sort((a, b) => (a.key < b.key ? -1 : 1));
+  return [{ label: 'Opening', balance: Number(openingBalance) }, ...points].slice(-(limit + 1));
+}
+
+function buildBalanceDatasets(openingBalance, transactions) {
+  const common = { transactions, openingBalance };
+  return {
+    daily: aggregateBalanceByPeriod({ ...common, periodKeyFn: (d) => d, periodLabelFn: (k) => k.slice(5), limit: 9 }),
+    weekly: aggregateBalanceByPeriod({ ...common, periodKeyFn: getWeekStart, periodLabelFn: (k) => k.slice(5), limit: 8 }),
+    monthly: aggregateBalanceByPeriod({ ...common, periodKeyFn: (d) => d.slice(0, 7), periodLabelFn: (k) => k, limit: 6 }),
+  };
 }
 
 export function DashboardPage() {
@@ -81,35 +119,35 @@ export function DashboardPage() {
 
   const todaysDay = bakeryDays.find((day) => day.date === todayDateString());
 
-  const weeklyChartData = bakeryDays
-    .filter((day) => day.status === 'completed')
-    .slice(-7)
-    .map((day) => ({
-      date: day.date.slice(5), // MM-DD, compact for the chart axis
-      Sales: Number(day.total_sales),
-      Expenses: Number(day.total_expenses),
-    }));
+  const bakeryDatasets = buildSumDatasets(
+    bakeryDays.filter((d) => d.status === 'completed'),
+    'date',
+    'Sales', (d) => Number(d.total_sales),
+    'Expenses', (d) => Number(d.total_expenses)
+  );
 
-  const reservesTrend = buildBalanceTrend(
+  const reservesDatasets = buildBalanceDatasets(
     reservesOpening ? reservesOpening.opening_balance : 0,
     reservesTx
   );
-  const cementTrend = buildBalanceTrend(
+
+  const cementDatasets = buildBalanceDatasets(
     cementOpening ? cementOpening.opening_balance : 0,
     cementTx
   );
 
-  return <DashboardView
-    bakeryBalance={bakeryBalance}
-    reservesBalance={reservesBalance}
-    cementBalance={cementSummary.currentBalance}
-    todaysDay={todaysDay}
-    weeklyChartData={weeklyChartData}
-    reservesTrend={reservesTrend}
-    cementTrend={cementTrend}
-  />;
+  return (
+    <DashboardView
+      bakeryBalance={bakeryBalance}
+      reservesBalance={reservesBalance}
+      cementBalance={cementSummary.currentBalance}
+      todaysDay={todaysDay}
+      bakeryDatasets={bakeryDatasets}
+      reservesDatasets={reservesDatasets}
+      cementDatasets={cementDatasets}
+    />
+  );
 }
-
 
 function StatCard({ label, value }) {
   return (
@@ -120,14 +158,84 @@ function StatCard({ label, value }) {
   );
 }
 
+function PeriodToggle({ mode, onChange }) {
+  return (
+    <div className="flex gap-1">
+      {['daily', 'weekly', 'monthly'].map((m) => (
+        <button
+          key={m}
+          onClick={() => onChange(m)}
+          className={`px-2.5 py-1 text-xs rounded-md capitalize ${
+            mode === m ? 'bg-accent text-white' : 'text-text-muted hover:bg-panel-bg'
+          }`}
+        >
+          {m}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function PeriodBarChartCard({ title, datasets, field1Name, field1Color, field2Name, field2Color }) {
+  const [mode, setMode] = useState('daily');
+  const chartData = datasets[mode];
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-text-muted">{title}</h3>
+        <PeriodToggle mode={mode} onChange={setMode} />
+      </div>
+      {chartData.length === 0 ? (
+        <p className="text-sm text-text-muted">Not enough data yet.</p>
+      ) : (
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={chartData}>
+            <CartesianGrid stroke="#242b3d" strokeDasharray="3 3" />
+            <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} />
+            <YAxis stroke="#94a3b8" fontSize={12} />
+            <Tooltip contentStyle={{ background: '#1a2133', border: '1px solid #242b3d', fontSize: 13 }} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Bar dataKey={field1Name} fill={field1Color} radius={[4, 4, 0, 0]} />
+            <Bar dataKey={field2Name} fill={field2Color} radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </Card>
+  );
+}
+
+function PeriodLineChartCard({ title, datasets, color }) {
+  const [mode, setMode] = useState('daily');
+  const chartData = datasets[mode];
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-text-muted">{title}</h3>
+        <PeriodToggle mode={mode} onChange={setMode} />
+      </div>
+      <ResponsiveContainer width="100%" height={220}>
+        <LineChart data={chartData}>
+          <CartesianGrid stroke="#242b3d" strokeDasharray="3 3" />
+          <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} />
+          <YAxis stroke="#94a3b8" fontSize={12} />
+          <Tooltip contentStyle={{ background: '#1a2133', border: '1px solid #242b3d', fontSize: 13 }} />
+          <Line type="monotone" dataKey="balance" stroke={color} strokeWidth={2} dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    </Card>
+  );
+}
+
 function DashboardView({
   bakeryBalance,
   reservesBalance,
   cementBalance,
   todaysDay,
-  weeklyChartData,
-  reservesTrend,
-  cementTrend,
+  bakeryDatasets,
+  reservesDatasets,
+  cementDatasets,
 }) {
   return (
     <div className="space-y-6">
@@ -178,59 +286,26 @@ function DashboardView({
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <h3 className="text-sm font-medium text-text-muted mb-3">
-            Bakery: Sales vs Expenses (last 7 completed days)
-          </h3>
-          {weeklyChartData.length === 0 ? (
-            <p className="text-sm text-text-muted">Not enough completed days yet.</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={weeklyChartData}>
-                <CartesianGrid stroke="#242b3d" strokeDasharray="3 3" />
-                <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} />
-                <YAxis stroke="#94a3b8" fontSize={12} />
-                <Tooltip
-                  contentStyle={{ background: '#1a2133', border: '1px solid #242b3d', fontSize: 13 }}
-                />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="Sales" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Expenses" fill="#ef4444" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </Card>
-
-        <Card>
-          <h3 className="text-sm font-medium text-text-muted mb-3">Reserves Balance Trend</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={reservesTrend}>
-              <CartesianGrid stroke="#242b3d" strokeDasharray="3 3" />
-              <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} />
-              <YAxis stroke="#94a3b8" fontSize={12} />
-              <Tooltip
-                contentStyle={{ background: '#1a2133', border: '1px solid #242b3d', fontSize: 13 }}
-              />
-              <Line type="monotone" dataKey="balance" stroke="#3b82f6" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </Card>
+        <PeriodBarChartCard
+          title="Bakery: Sales vs Expenses"
+          datasets={bakeryDatasets}
+          field1Name="Sales"
+          field1Color="#22c55e"
+          field2Name="Expenses"
+          field2Color="#ef4444"
+        />
+        <PeriodLineChartCard
+          title="Reserves Balance Trend"
+          datasets={reservesDatasets}
+          color="#3b82f6"
+        />
       </div>
 
-      <Card>
-        <h3 className="text-sm font-medium text-text-muted mb-3">Cement Balance Trend</h3>
-        <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={cementTrend}>
-            <CartesianGrid stroke="#242b3d" strokeDasharray="3 3" />
-            <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} />
-            <YAxis stroke="#94a3b8" fontSize={12} />
-            <Tooltip
-              contentStyle={{ background: '#1a2133', border: '1px solid #242b3d', fontSize: 13 }}
-            />
-            <Line type="monotone" dataKey="balance" stroke="#f59e0b" strokeWidth={2} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
-      </Card>
+      <PeriodLineChartCard
+        title="Cement Balance Trend"
+        datasets={cementDatasets}
+        color="#f59e0b"
+      />
     </div>
   );
 }

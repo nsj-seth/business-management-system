@@ -8,6 +8,11 @@ function addOneDay(dateString) {
   date.setUTCDate(date.getUTCDate() + 1);
   return date.toISOString().slice(0, 10);
 }
+// JavaScript's getUTCDay() returns 0=Sunday, 1=Monday, ... 4=Thursday, ... 6=Saturday.
+function isThursday(dateString) {
+  const date = new Date(`${dateString}T00:00:00Z`);
+  return date.getUTCDay() === 4;
+}
 
 // Builds a reference number like BAK-20260912 from a date string.
 function buildReferenceNumber(dateString) {
@@ -51,7 +56,7 @@ async function createDay(requestedDate) {
       throw error;
     }
 
-    openingBalance = previousDay.closing_balance;
+    openingBalance = isThursday(requestedDate) ? 0 : previousDay.closing_balance;
   }
 
   const newDay = await repository.createDay({
