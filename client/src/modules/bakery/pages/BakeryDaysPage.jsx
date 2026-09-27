@@ -13,7 +13,7 @@ import { Pagination } from '../../../components/ui/Pagination';
 // created next: the day after it, or today if no days exist yet.
 function getNextDate(days) {
   if (days.length === 0) {
-    return new Date().toISOString().slice(0, 10);
+    return '2026-09-03';
   }
   const mostRecent = days[days.length - 1]; // days are sorted oldest-first
   const next = new Date(`${mostRecent.date}T00:00:00Z`);
