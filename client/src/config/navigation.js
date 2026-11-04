@@ -1,4 +1,4 @@
-import { LayoutDashboard, ShoppingBag, PiggyBank, Package } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, PiggyBank, Package, Sprout } from 'lucide-react';
 
 // Adding a future module = adding one object here. Nothing else
 // in the layout needs to change.
@@ -7,4 +7,5 @@ export const navigation = [
   { label: 'Bakery', path: '/bakery', icon: ShoppingBag },
   { label: 'Reserves', path: '/reserves', icon: PiggyBank },
   { label: 'Cement', path: '/cement', icon: Package },
+  { label: 'Farms', path: '/farms', icon: Sprout },
 ];

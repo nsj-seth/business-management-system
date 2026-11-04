@@ -7,6 +7,7 @@ import { BakeryDaysPage } from './modules/bakery/pages/BakeryDaysPage';
 import { BakeryDayDetailPage } from './modules/bakery/pages/BakeryDayDetailPage';
 import { ReservesPage } from './modules/reserves/pages/ReservesPage';
 import { CementPage } from './modules/cement/pages/CementPage';
+import { FarmsPage } from './modules/farms/pages/FarmsPage';
 import { Spinner } from './components/ui/Spinner';
 import { DashboardPage } from './pages/DashboardPage';
 
@@ -89,6 +90,7 @@ function Dashboard() {
         <Route path="/bakery/days/:dayId" element={<BakeryDayDetailPage />} />
         <Route path="/reserves" element={<ReservesPage />} />
         <Route path="/cement" element={<CementPage />} />
+        <Route path="/farms" element={<FarmsPage />} />
       </Routes>
     </AppLayout>
   );
