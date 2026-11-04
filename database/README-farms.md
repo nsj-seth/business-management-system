@@ -1,11 +1,19 @@
-# Farms database setup
+# Farms module — integration with existing Supabase tables
 
-Run `database/farms.sql` in the **Supabase SQL Editor** of the database connected to the BMS backend **before** opening the new Farms page. This is a one-time schema migration; committing it to GitHub does not execute it.
+Your Supabase project already contains `public.farm_opening_state` and `public.farm_transactions`.
+**Do not recreate, delete, or truncate these tables.**
 
-The Farms UI suggests a starting date of 2026-09-01 and opening balance of 22,602.00. Verify these against the paper ledger before saving. The opening balance is saved only once.
+The existing `farm_transactions` columns are `type` (`credit` or `debit`), `amount`, and `balance`. They do **not** contain separate `credit` and `debit` columns. The backend derives those values when formatting API responses; existing rows are compatible.
 
-Entries contain a date, free-text particular, type (credit or debit) and amount. The Postgres function `add_farm_transaction` inserts each entry and recalculates all running balances in chronological transaction-date order within one database transaction. The ledger page lists entries by time entered (newest first), so a backdated entry may appear ahead of transactions whose ledger balances it affects.
+## Required database preparation
 
-Farms endpoints require Supabase authentication. The function only grants execution to the server-side service role, and the two tables use RLS with no browser policies.
+1. Back up `farm_transactions` and `farm_opening_state`.
+2. Run `database/farms.sql` in the Supabase SQL Editor. This creates indexes and the atomic `add_farm_transaction` function, but does **not** recreate or delete either table.
+3. Confirm your existing opening state and all existing transactions are correct before adding an entry. **The first new transaction recalculates the balance of every existing farm transaction** according to transaction date (then creation time and ID). This may change stored historical balances if earlier balances were based on entry order.
+4. Ensure the authenticated user's ID exists in `public.profiles`: existing `created_by` foreign keys reference profiles, not auth.users directly.
 
-The migration must be applied to the live database separately; it will not run automatically on deploy.
+The existing opening state is reused automatically. The UI's suggested opening date and amount are shown only if no opening state exists.
+
+The Farms ledger displays newest *entered* records first (by `created_at`). Balance calculations follow *transaction date* so backdated entries adjust later balances.
+
+**Deployment:** The SQL Editor step is not run automatically when code is committed to GitHub.

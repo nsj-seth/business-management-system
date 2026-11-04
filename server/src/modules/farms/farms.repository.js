@@ -2,7 +2,9 @@ const supabase = require('../../config/supabaseClient');
 
 async function findOpeningState() {
   const { data, error } = await supabase
-    .from('farm_opening_state').select('*').limit(1).maybeSingle();
+    .from('farm_opening_state').select('*')
+    .order('created_at', { ascending: true })
+    .limit(1).maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -31,7 +33,14 @@ async function findAllTransactions() {
     .select('*').order('created_at', { ascending: false })
     .order('id', { ascending: false });
   if (error) throw error;
-  return data;
+
+  // Derive credit/debit presentation from the EXISTING type+amount columns.
+  // Do not require new database columns or migrate existing records.
+  return data.map((tx) => ({
+    ...tx,
+    credit: tx.type === 'credit' ? tx.amount : 0,
+    debit: tx.type === 'debit' ? tx.amount : 0,
+  }));
 }
 
 async function findCurrentBalanceTransaction() {
