@@ -1,3 +1,4 @@
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { useEffect, useState } from 'react';
 import { reservesApi } from '../services/reservesApi';
 import { Card } from '../../../components/ui/Card';
@@ -42,7 +43,7 @@ function SetupForm({ onSetupComplete }) {
       </p>
 
       {errorMessage && (
-        <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
+        <div role="alert" className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
           {errorMessage}
         </div>
       )}
@@ -50,8 +51,8 @@ function SetupForm({ onSetupComplete }) {
       <Card>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1">As-of Date</label>
-            <input
+            <label htmlFor="as-of-date" className="block text-xs font-medium text-text-muted mb-1">As-of Date</label>
+            <input id="as-of-date"
               type="date"
               value={asOfDate}
               onChange={(e) => setAsOfDate(e.target.value)}
@@ -60,8 +61,8 @@ function SetupForm({ onSetupComplete }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1">Existing Cumulative Profit</label>
-            <input
+            <label htmlFor="existing-cumulative-profit" className="block text-xs font-medium text-text-muted mb-1">Existing Cumulative Profit</label>
+            <input id="existing-cumulative-profit"
               type="number"
               value={cumulativeProfit}
               onChange={(e) => setCumulativeProfit(e.target.value)}
@@ -72,8 +73,8 @@ function SetupForm({ onSetupComplete }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1">Existing Cumulative Expense</label>
-            <input
+            <label htmlFor="existing-cumulative-expense" className="block text-xs font-medium text-text-muted mb-1">Existing Cumulative Expense</label>
+            <input id="existing-cumulative-expense"
               type="number"
               value={cumulativeExpense}
               onChange={(e) => setCumulativeExpense(e.target.value)}
@@ -84,8 +85,8 @@ function SetupForm({ onSetupComplete }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1">Existing Reserve Balance</label>
-            <input
+            <label htmlFor="existing-reserve-balance" className="block text-xs font-medium text-text-muted mb-1">Existing Reserve Balance</label>
+            <input id="existing-reserve-balance"
               type="number"
               value={balance}
               onChange={(e) => setBalance(e.target.value)}
@@ -167,7 +168,7 @@ const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_
       </Card>
 
       {errorMessage && (
-        <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
+        <div role="alert" className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
           {errorMessage}
         </div>
       )}
@@ -176,6 +177,7 @@ const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_
         <h3 className="text-sm font-medium text-text-muted mb-3">Add Transaction</h3>
         <form onSubmit={handleAddTransaction} className="flex flex-wrap gap-2">
           <input
+            aria-label="Transaction date"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
@@ -183,13 +185,13 @@ const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_
             className="bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
           />
           <input
-            placeholder="Particular"
+            aria-label="Particular" placeholder="Particular"
             value={particular}
             onChange={(e) => setParticular(e.target.value)}
             required
             className="flex-1 min-w-[140px] bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
           />
-          <select
+          <select aria-label="Transaction type"
             value={type}
             onChange={(e) => setType(e.target.value)}
             className="bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
@@ -199,7 +201,7 @@ const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_
           </select>
           <input
             type="number"
-            placeholder="Amount"
+            aria-label="Amount" placeholder="Amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             required
@@ -215,7 +217,7 @@ const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_
         <h3 className="text-sm font-medium text-text-muted mb-3">History</h3>
         {isLoading && <p className="text-sm text-text-muted">Loading...</p>}
         {!isLoading && transactions.length === 0 && (
-          <p className="text-sm text-text-muted">No transactions yet.</p>
+          <EmptyState>No transactions yet.</EmptyState>
         )}
         {!isLoading && transactions.length > 0 && (
           <Table>
@@ -278,7 +280,7 @@ export function ReservesPage() {
     loadOpeningState();
   }, []);
 
-    if (errorMessage) return <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">{errorMessage}</div>;
+    if (errorMessage) return <div role="alert" className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">{errorMessage}</div>;
   if (openingState === undefined) return <Spinner size={24} className="text-accent" />;
 
   return openingState

@@ -67,7 +67,7 @@ const paginatedDays = sortedDays.slice((currentPage - 1) * PAGE_SIZE, currentPag
   return (
     <div className="space-y-4">
       {errorMessage && (
-        <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
+        <div role="alert" className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
           {errorMessage}
         </div>
       )}

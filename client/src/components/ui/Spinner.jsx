@@ -1,6 +1,8 @@
 export function Spinner({ size = 16, className = '' }) {
   return (
     <svg
+      role="status"
+      aria-label="Loading"
       className={`animate-spin ${className}`}
       width={size}
       height={size}

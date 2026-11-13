@@ -1,3 +1,5 @@
+import { Wallet, ArrowUpRight, ShoppingBag, PiggyBank, Package, Sprout } from 'lucide-react';
+import { navigation } from '../config/navigation';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -107,7 +109,7 @@ export function DashboardPage() {
   if (errorMessage) {
     return <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">{errorMessage}</div>;
   }
-  if (!data) return <Spinner size={24} className="text-accent" />;
+  if (!data) return <Card><div className="flex items-center gap-3 py-12 justify-center text-text-muted"><Spinner size={24} className="text-accent" />Loading your business overview…</div></Card>;
 
   const { bakeryDays, reservesOpening, reservesTx, cementSummary, cementOpening, cementTx } = data;
 
@@ -149,21 +151,23 @@ export function DashboardPage() {
   );
 }
 
-function StatCard({ label, value }) {
+function StatCard({ label, value, icon: Icon = Wallet, path }) {
   return (
     <Card>
-      <p className="text-xs text-text-muted mb-1">{label}</p>
-      <p className="text-2xl font-semibold text-text-primary">{value}</p>
+      <div className="flex justify-between items-center mb-6"><span className="w-11 h-11 rounded-xl bg-accent/10 text-accent flex items-center justify-center"><Icon size={22} /></span><Link to={path} className="icon-button" aria-label={`Open ${label}`}><ArrowUpRight size={17} /></Link></div>
+      <p className="text-sm text-text-muted mb-2">{label}</p>
+      <p className="text-2xl font-semibold tracking-tight tabular-nums text-text-primary">{new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(Number(value) || 0)}</p>
     </Card>
   );
 }
 
 function PeriodToggle({ mode, onChange }) {
   return (
-    <div className="flex gap-1">
+    <div className="inline-flex bg-app-bg border border-border p-1 rounded-xl">
       {['daily', 'weekly', 'monthly'].map((m) => (
         <button
           key={m}
+          aria-pressed={mode === m}
           onClick={() => onChange(m)}
           className={`px-2.5 py-1 text-xs rounded-md capitalize ${
             mode === m ? 'bg-accent text-white' : 'text-text-muted hover:bg-panel-bg'
@@ -182,7 +186,7 @@ function PeriodBarChartCard({ title, datasets, field1Name, field1Color, field2Na
 
   return (
     <Card>
-      <div className="flex items-center justify-between mb-3">
+      <div className="chart-heading flex flex-wrap gap-3 items-center justify-between mb-6">
         <h3 className="text-sm font-medium text-text-muted">{title}</h3>
         <PeriodToggle mode={mode} onChange={setMode} />
       </div>
@@ -191,10 +195,10 @@ function PeriodBarChartCard({ title, datasets, field1Name, field1Color, field2Na
       ) : (
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={chartData}>
-            <CartesianGrid stroke="#242b3d" strokeDasharray="3 3" />
-            <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} />
-            <YAxis stroke="#94a3b8" fontSize={12} />
-            <Tooltip contentStyle={{ background: '#1a2133', border: '1px solid #242b3d', fontSize: 13 }} />
+            <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" />
+            <XAxis dataKey="label" stroke="var(--color-text-muted)" fontSize={12} />
+            <YAxis stroke="var(--color-text-muted)" fontSize={12} />
+            <Tooltip contentStyle={{ background: 'var(--color-surface)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)', borderRadius: 12, fontSize: 13 }} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
             <Bar dataKey={field1Name} fill={field1Color} radius={[4, 4, 0, 0]} />
             <Bar dataKey={field2Name} fill={field2Color} radius={[4, 4, 0, 0]} />
@@ -211,16 +215,16 @@ function PeriodLineChartCard({ title, datasets, color }) {
 
   return (
     <Card>
-      <div className="flex items-center justify-between mb-3">
+      <div className="chart-heading flex flex-wrap gap-3 items-center justify-between mb-6">
         <h3 className="text-sm font-medium text-text-muted">{title}</h3>
         <PeriodToggle mode={mode} onChange={setMode} />
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <LineChart data={chartData}>
-          <CartesianGrid stroke="#242b3d" strokeDasharray="3 3" />
-          <XAxis dataKey="label" stroke="#94a3b8" fontSize={12} />
-          <YAxis stroke="#94a3b8" fontSize={12} />
-          <Tooltip contentStyle={{ background: '#1a2133', border: '1px solid #242b3d', fontSize: 13 }} />
+          <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" />
+          <XAxis dataKey="label" stroke="var(--color-text-muted)" fontSize={12} />
+          <YAxis stroke="var(--color-text-muted)" fontSize={12} />
+          <Tooltip contentStyle={{ background: 'var(--color-surface)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)', borderRadius: 12, fontSize: 13 }} />
           <Line type="monotone" dataKey="balance" stroke={color} strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
@@ -239,12 +243,14 @@ function DashboardView({
 }) {
   return (
     <div className="space-y-6">
+      <div className="rounded-2xl border border-accent/20 bg-accent/5 p-6 flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs uppercase tracking-widest text-accent font-semibold">Business overview</p><h2 className="text-xl font-semibold mt-2">Your operations at a glance</h2><p className="text-sm text-text-muted mt-2">Review balances below or jump straight into a business module.</p></div><span className="p-4 rounded-2xl bg-accent/10 text-accent"><Sprout size={30} /></span></div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard label="Bakery Balance" value={bakeryBalance} />
-        <StatCard label="Reserves Balance" value={reservesBalance} />
-        <StatCard label="Cement Balance" value={cementBalance} />
+        <StatCard label="Bakery Balance" value={bakeryBalance} icon={ShoppingBag} path="/bakery" />
+        <StatCard label="Reserves Balance" value={reservesBalance} icon={PiggyBank} path="/reserves" />
+        <StatCard label="Cement Balance" value={cementBalance} icon={Package} path="/cement" />
       </div>
 
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">{navigation.filter(item => item.path !== '/').map(({ path, label, icon: Icon }) => <Link key={path} to={path} className="flex items-center gap-3 p-4 rounded-xl border border-border bg-surface hover:border-accent transition-colors"><Icon size={18} className="text-accent" /><span className="text-sm font-medium flex-1">{label}</span><ArrowUpRight size={15} className="text-text-muted" /></Link>)}</div>
       <Card>
         <h3 className="text-sm font-medium text-text-muted mb-3">Today's Bakery Status</h3>
         {todaysDay ? (
