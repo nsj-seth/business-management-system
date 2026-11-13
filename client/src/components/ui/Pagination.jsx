@@ -4,7 +4,7 @@ export function Pagination({ currentPage, totalItems, pageSize, onPageChange }) 
   const endItem = Math.min(currentPage * pageSize, totalItems);
 
   return (
-    <div className="flex items-center justify-between mt-3 text-sm text-text-muted">
+    <div className="flex flex-wrap gap-3 items-center justify-between mt-5 text-sm text-text-muted">
       <span>
         Showing {startItem}-{endItem} of {totalItems}
       </span>
@@ -12,14 +12,14 @@ export function Pagination({ currentPage, totalItems, pageSize, onPageChange }) 
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
-          className="px-3 py-1 rounded-md border border-border disabled:opacity-40 disabled:cursor-not-allowed hover:bg-panel-bg"
+          className="min-h-10 px-3 py-2 rounded-lg border border-border disabled:opacity-40 disabled:cursor-not-allowed hover:bg-panel-bg"
         >
           Previous
         </button>
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
-          className="px-3 py-1 rounded-md border border-border disabled:opacity-40 disabled:cursor-not-allowed hover:bg-panel-bg"
+          className="min-h-10 px-3 py-2 rounded-lg border border-border disabled:opacity-40 disabled:cursor-not-allowed hover:bg-panel-bg"
         >
           Next
         </button>

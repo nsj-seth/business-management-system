@@ -1,3 +1,4 @@
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { bakeryApi } from '../services/bakeryApi';
@@ -103,7 +104,7 @@ async function handleCompleteDay() {
       </div>
 
       {errorMessage && (
-        <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
+        <div role="alert" className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
           {errorMessage}
         </div>
       )}
@@ -132,7 +133,7 @@ async function handleCompleteDay() {
 
       <Card>
         <h3 className="text-sm font-medium text-text-muted mb-3">Sales</h3>
-        {day.sales.length === 0 && <p className="text-sm text-text-muted mb-3">No sales yet.</p>}
+        {day.sales.length === 0 && <EmptyState>No sales yet.</EmptyState>}
         <div className="space-y-2 mb-3">
           {day.sales.map((sale) => (
             <div key={sale.id} className="flex justify-between text-sm">
@@ -144,7 +145,7 @@ async function handleCompleteDay() {
         {!isLocked && (
           <form onSubmit={handleAddSale} className="flex flex-wrap gap-2">
             <input
-              placeholder="Salesperson"
+              aria-label="Salesperson" placeholder="Salesperson"
               value={salesperson}
               onChange={(e) => setSalesperson(e.target.value)}
               required
@@ -152,7 +153,7 @@ async function handleCompleteDay() {
             />
             <input
               type="number"
-              placeholder="Amount"
+              aria-label="Amount" placeholder="Amount"
               value={saleAmount}
               onChange={(e) => setSaleAmount(e.target.value)}
               required
@@ -167,7 +168,7 @@ async function handleCompleteDay() {
 
       <Card>
         <h3 className="text-sm font-medium text-text-muted mb-3">Expenses</h3>
-        {day.expenses.length === 0 && <p className="text-sm text-text-muted mb-3">No expenses yet.</p>}
+        {day.expenses.length === 0 && <EmptyState>No expenses yet.</EmptyState>}
         <div className="space-y-2 mb-3">
           {day.expenses.map((expense) => (
             <div key={expense.id} className="flex justify-between text-sm">
@@ -179,7 +180,7 @@ async function handleCompleteDay() {
         {!isLocked && (
           <form onSubmit={handleAddExpense} className="flex flex-wrap gap-2">
             <input
-              placeholder="Description"
+              aria-label="Description" placeholder="Description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
@@ -187,7 +188,7 @@ async function handleCompleteDay() {
             />
             <input
               type="number"
-              placeholder="Amount"
+              aria-label="Amount" placeholder="Amount"
               value={expenseAmount}
               onChange={(e) => setExpenseAmount(e.target.value)}
               required

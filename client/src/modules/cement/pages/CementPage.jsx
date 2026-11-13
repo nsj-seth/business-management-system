@@ -1,3 +1,4 @@
+import { EmptyState } from '../../../components/ui/EmptyState';
 import { useEffect, useState } from 'react';
 import { cementApi } from '../services/cementApi';
 import { Card } from '../../../components/ui/Card';
@@ -34,7 +35,7 @@ function SetupForm({ onSetupComplete }) {
       </p>
 
       {errorMessage && (
-        <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
+        <div role="alert" className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
           {errorMessage}
         </div>
       )}
@@ -42,8 +43,8 @@ function SetupForm({ onSetupComplete }) {
       <Card>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1">As-of Date</label>
-            <input
+            <label htmlFor="as-of-date" className="block text-xs font-medium text-text-muted mb-1">As-of Date</label>
+            <input id="as-of-date"
               type="date"
               value={asOfDate}
               onChange={(e) => setAsOfDate(e.target.value)}
@@ -52,8 +53,8 @@ function SetupForm({ onSetupComplete }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1">Existing Balance</label>
-            <input
+            <label htmlFor="existing-balance" className="block text-xs font-medium text-text-muted mb-1">Existing Balance</label>
+            <input id="existing-balance"
               type="number"
               value={balance}
               onChange={(e) => setBalance(e.target.value)}
@@ -158,7 +159,7 @@ const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_
       )}
 
       {errorMessage && (
-        <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
+        <div role="alert" className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">
           {errorMessage}
         </div>
       )}
@@ -167,13 +168,14 @@ const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_
         <h3 className="text-sm font-medium text-text-muted mb-3">Add Transaction</h3>
         <form onSubmit={handleAddTransaction} className="flex flex-wrap gap-2">
           <input
+            aria-label="Transaction date"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
             className="bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
           />
-          <select
+          <select aria-label="Transaction type"
             value={type}
             onChange={(e) => setType(e.target.value)}
             className="bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
@@ -183,7 +185,7 @@ const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_
           </select>
           <input
             type="number"
-            placeholder="Bags"
+            aria-label="Bags" placeholder="Bags"
             value={bags}
             onChange={(e) => setBags(e.target.value)}
             required
@@ -193,7 +195,7 @@ const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_
           />
           <input
             type="number"
-            placeholder="Price per bag"
+            aria-label="Price per bag" placeholder="Price per bag"
             value={pricePerBag}
             onChange={(e) => setPricePerBag(e.target.value)}
             required
@@ -202,7 +204,7 @@ const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_
             className="w-32 bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
           />
           <input
-            placeholder="Particular (optional)"
+            aria-label="Particular (optional)" placeholder="Particular (optional)"
             value={particular}
             onChange={(e) => setParticular(e.target.value)}
             className="flex-1 min-w-[140px] bg-panel-bg border border-border rounded-md px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
@@ -215,7 +217,7 @@ const paginatedTransactions = sortedTransactions.slice((currentPage - 1) * PAGE_
         <h3 className="text-sm font-medium text-text-muted mb-3">Ledger</h3>
         {isLoading && <p className="text-sm text-text-muted">Loading...</p>}
         {!isLoading && transactions.length === 0 && (
-          <p className="text-sm text-text-muted">No transactions yet.</p>
+          <EmptyState>No transactions yet.</EmptyState>
         )}
         {!isLoading && transactions.length > 0 && (
           <Table>
@@ -280,7 +282,7 @@ export function CementPage() {
     loadOpeningState();
   }, []);
 
-  if (errorMessage) return <div className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">{errorMessage}</div>;
+  if (errorMessage) return <div role="alert" className="bg-danger-bg text-danger text-sm px-4 py-2 rounded-md">{errorMessage}</div>;
 if (openingState === undefined) return <Spinner size={24} className="text-accent" />;
 
   return openingState ? <CementLedger /> : <SetupForm onSetupComplete={loadOpeningState} />;
