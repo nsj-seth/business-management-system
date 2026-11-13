@@ -6,6 +6,17 @@ function httpError(message, statusCode) {
   return error;
 }
 
+function databaseError(error) {
+  if (error.code === 'PGRST202' || error.code === '42883') {
+    return httpError('Farms database setup is incomplete. Apply database/farms.sql in the BMS project.', 503);
+  }
+  if (error.code === '23503') {
+    return httpError('Your account needs a matching user profile before recording Farms entries', 409);
+  }
+  if (error.code === '22023') return httpError(error.message, 400);
+  return error;
+}
+
 function isValidDate(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(value + 'T00:00:00Z');
@@ -33,7 +44,7 @@ async function setupOpeningState({ asOfDate, balance, userId }) {
     });
   } catch (error) {
     if (error.code === '23505') throw httpError('Farms opening balance has already been set', 409);
-    throw error;
+    throw databaseError(error);
   }
 }
 
@@ -61,7 +72,7 @@ async function addTransaction({ date, particular, type, amount, userId }) {
     if (/opening balance|opening date|Invalid farm transaction/i.test(error.message)) {
       throw httpError(error.message, 400);
     }
-    throw error;
+    throw databaseError(error);
   }
 }
 
@@ -70,17 +81,8 @@ async function listTransactions() {
 }
 
 async function getSummary() {
-  const [opening, latestLedger, transactions] = await Promise.all([
-    repository.findOpeningState(),
-    repository.findCurrentBalanceTransaction(),
-    repository.findAllTransactions(),
-  ]);
-  return {
-    currentBalance: latestLedger ? Number(latestLedger.balance) : Number(opening?.opening_balance ?? 0),
-    totalCredit: transactions.reduce((sum, tx) => sum + Number(tx.credit), 0),
-    totalDebit: transactions.reduce((sum, tx) => sum + Number(tx.debit), 0),
-    transactionCount: transactions.length,
-  };
+  try { return await repository.getSummary(); }
+  catch (error) { throw databaseError(error); }
 }
 
 module.exports = { setupOpeningState, getOpeningState, addTransaction, listTransactions, getSummary };

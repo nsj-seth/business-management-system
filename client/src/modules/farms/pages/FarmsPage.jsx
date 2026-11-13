@@ -13,8 +13,8 @@ const money = (value) => Number(value ?? 0).toLocaleString('en-GH', {
 const inputClass = 'bg-panel-bg border border-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent';
 
 function OpeningSetup({ onComplete }) {
-  const [asOfDate, setAsOfDate] = useState('2026-09-01');
-  const [balance, setBalance] = useState('22602');
+  const [asOfDate, setAsOfDate] = useState('');
+  const [balance, setBalance] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -33,7 +33,7 @@ function OpeningSetup({ onComplete }) {
     <div className="max-w-lg space-y-4">
       <p className="text-sm text-text-muted">
         Enter the opening balance from your paper Farms ledger. This is a one-time setup.
-        The suggested figures can be changed before saving.
+        Use your confirmed ledger opening date and balance.
       </p>
       {error && <p role="alert" className="text-danger text-sm">{error}</p>}
       <Card>
@@ -98,17 +98,18 @@ function FarmsLedger({ openingState }) {
     finally { setSaving(false); }
   }
 
+  const showMoney = (value) => summary ? money(value) : '—';
   const page = transactions.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card><p className="text-xs text-text-muted">Current balance</p>
-          <p className="text-xl font-semibold text-text-primary">{money(summary?.currentBalance ?? openingState.opening_balance)}</p></Card>
+          <p className="text-xl font-semibold text-text-primary">{showMoney(summary?.currentBalance)}</p></Card>
         <Card><p className="text-xs text-text-muted">Total credit</p>
-          <p className="text-xl font-semibold text-success">{money(summary?.totalCredit)}</p></Card>
+          <p className="text-xl font-semibold text-success">{showMoney(summary?.totalCredit)}</p></Card>
         <Card><p className="text-xs text-text-muted">Total debit</p>
-          <p className="text-xl font-semibold text-danger">{money(summary?.totalDebit)}</p></Card>
+          <p className="text-xl font-semibold text-danger">{showMoney(summary?.totalDebit)}</p></Card>
       </div>
       {error && <p role="alert" className="bg-danger-bg text-danger text-sm rounded-md p-3">{error}</p>}
       <Card>
@@ -128,27 +129,29 @@ function FarmsLedger({ openingState }) {
           <input aria-label="Amount" type="number" required min="0" step="0.01"
             placeholder="Amount" className={inputClass + ' w-32'}
             value={amount} onChange={(e) => setAmount(e.target.value)} />
-          <Button type="submit" isLoading={saving}>Add transaction</Button>
+          <Button type="submit" isLoading={saving} disabled={loading || !summary}>Add transaction</Button>
         </form>
       </Card>
       <Card>
-        <h2 className="text-sm font-medium text-text-muted mb-3">Farms ledger</h2>
+        <div className="flex items-center justify-between gap-3 mb-3"><h2 className="text-sm font-medium text-text-muted">Farms ledger</h2><Button variant="secondary" onClick={load} disabled={loading || saving}>Refresh ledger</Button></div>
+        <p className="text-xs text-text-muted mb-4">Opening balance: {money(openingState.opening_balance)} · As of {openingState.as_of_date}</p>
         {loading ? <Spinner size={24} className="text-accent" /> : (
           <>
             <Table>
               <thead><tr>
-                <Th>Date</Th><Th>Particular</Th>
+                <Th>Date</Th><Th>Reference</Th><Th>Particular</Th>
                 <Th align="right">Credit</Th><Th align="right">Debit</Th>
                 <Th align="right">Balance</Th>
               </tr></thead>
               <tbody>
-                {page.length === 0 && <tr><Td>No transactions yet.</Td></tr>}
+                {page.length === 0 && <tr><td colSpan={6} className="py-8 text-center text-sm text-text-muted">No transactions yet. Add your first credit or debit above.</td></tr>}
                 {page.map((tx) => (
                   <tr key={tx.id}>
                     <Td>{tx.date}</Td>
+                    <Td>{tx.reference_number}</Td>
                     <Td>{tx.particular}</Td>
-                    <Td align="right">{Number(tx.credit) ? money(tx.credit) : '—'}</Td>
-                    <Td align="right">{Number(tx.debit) ? money(tx.debit) : '—'}</Td>
+                    <Td align="right">{tx.type === 'credit' ? money(tx.amount) : '—'}</Td>
+                    <Td align="right">{tx.type === 'debit' ? money(tx.amount) : '—'}</Td>
                     <Td align="right">{money(tx.balance)}</Td>
                   </tr>
                 ))}
