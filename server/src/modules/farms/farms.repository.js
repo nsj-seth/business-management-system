@@ -3,7 +3,7 @@ const supabase = require('../../config/supabaseClient');
 async function findOpeningState() {
   const { data, error } = await supabase
     .from('farm_opening_state').select('*')
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: true }).order('id', { ascending: true })
     .limit(1).maybeSingle();
   if (error) throw error;
   return data;
@@ -29,10 +29,17 @@ async function createTransaction(payload) {
 }
 
 async function findAllTransactions() {
-  const { data, error } = await supabase.from('farm_transactions')
-    .select('*').order('created_at', { ascending: false })
-    .order('id', { ascending: false });
-  if (error) throw error;
+  // PostgREST caps each response; walk pages so older entries never disappear.
+  const data = [];
+  const pageSize = 1000;
+  for (let offset = 0; ; offset += pageSize) {
+    const { data: page, error } = await supabase.from('farm_transactions')
+      .select('*').order('created_at', { ascending: false })
+      .order('id', { ascending: false }).range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    data.push(...page);
+    if (page.length < pageSize) break;
+  }
 
   // Derive credit/debit presentation from the EXISTING type+amount columns.
   // Do not require new database columns or migrate existing records.
@@ -43,17 +50,13 @@ async function findAllTransactions() {
   }));
 }
 
-async function findCurrentBalanceTransaction() {
-  const { data, error } = await supabase.from('farm_transactions')
-    .select('balance').order('date', { ascending: false })
-    .order('created_at', { ascending: false })
-    .order('id', { ascending: false })
-    .limit(1).maybeSingle();
+async function getSummary() {
+  const { data, error } = await supabase.rpc('get_farm_summary');
   if (error) throw error;
   return data;
 }
 
 module.exports = {
   findOpeningState, createOpeningState, createTransaction,
-  findAllTransactions, findCurrentBalanceTransaction,
+  findAllTransactions, getSummary,
 };
